@@ -6,7 +6,7 @@ var Server = {
 		s.loop = setInterval(s.tick, (1000 / s.tickRate))
 		s.WebSocketServer = require('websocket').server
 		s.http =  require("http") 
-		s.server = s.http.createServer(function(res, req){}).listen(6666)
+		s.server = s.http.createServer(function(res, req){}).listen(8989)
 		s.wsServer = new s.WebSocketServer({
 			httpServer: s.server,
 			autoAcceptcons: false
