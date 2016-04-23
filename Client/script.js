@@ -12,7 +12,7 @@ var Client = {
 	},
 	connect: function() {
 		if (c.sock == undefined){
-			c.sock = new WebSocket("ws://potatobox.no-ip.info:6666", 'echo-protocol')
+			c.sock = new WebSocket("ws://potatobox.no-ip.info:8989", 'echo-protocol')
 			c.name = get("name").value
 			get("connect").style.visibility = "hidden"
 			get("canvas").style.visibility = "visible"
