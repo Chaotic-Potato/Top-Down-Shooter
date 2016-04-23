@@ -1,0 +1,22 @@
+body {
+	font-family: "Courier New", sans-serif;
+	font-weight: bold;
+	font-size: 18;
+}
+
+input {
+	font-family: "Courier New", sans-serif;
+	font-weight: bold;
+	border-radius: 5px;
+	border: #888 solid 2px;
+	font-size: 18;
+}
+
+button {
+	font-family: "Courier New", sans-serif;
+	font-weight: bold;
+	border-radius: 5px;
+	border: #666 solid 2px;
+	background-color: #CCC;
+	font-size: 18;
+}

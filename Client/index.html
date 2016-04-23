@@ -1,0 +1,22 @@
+<html>
+	<head>
+		<title>Pew Pew</title>
+		<link rel="stylesheet" type="text/css" href="style.css">
+	</head>
+	<body>
+		<div style="visibility:hidden;">
+			<img id="playerDown" src="Images/playerDown.png">
+			<img id="playerUp" src="Images/playerUp.png">
+			<img id="playerRight" src="Images/playerRight.png">
+			<img id="playerLeft" src="Images/playerLeft.png">
+		</div>
+		<div id="connect" style="position:absolute;">
+			<span>Name:</span>
+			<input id="name">
+			<button onclick="c.connect()">Connect</button>
+		</div>
+		<canvas id="canvas" style="visibility:hidden;position:absolute"></canvas>
+		<canvas id="map" style="visibility:hidden;position:absolute"></canvas>
+		<script src="script.js"></script>
+	</body>
+</html>
