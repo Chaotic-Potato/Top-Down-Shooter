@@ -11,6 +11,7 @@ var Client = {
 		"d" : false
 	},
 	connect: function() {
+		c.loop = setInterval(c.tick, (1000 / c.tickRate))
 		if (c.sock == undefined){
 			c.sock = new WebSocket("ws://potatobox.no-ip.info:8989", 'echo-protocol')
 			c.name = get("name").value
@@ -184,7 +185,6 @@ var Render = {
 var c = Client
 var r = Render
 
-setInterval(c.tick, (1000 / c.tickRate))
 get = function(id) {return document.getElementById(id)}
 
 document.onkeydown = c.keyDown
