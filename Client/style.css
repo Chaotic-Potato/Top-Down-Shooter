@@ -2,6 +2,10 @@ body {
 	font-family: "Courier New", sans-serif;
 	font-weight: bold;
 	font-size: 18;
+    background-image: url("Images/background.png");
+    background-repeat: repeat;
+    background-attachment: fixed;
+    background-position: 50px 100px;
 }
 
 input {
@@ -20,3 +24,4 @@ button {
 	background-color: #CCC;
 	font-size: 18;
 }
+

@@ -54,6 +54,7 @@ var Client = {
 	},
 	tick: function() {
 		r.clear()
+		r.background()
 		r.border()
 		r.players()
 		r.names()
@@ -143,8 +144,13 @@ var Render = {
 		r.context.stroke()
 		r.context.fillStyle = "#EEE"
 		r.context.fillRect(20, 20, 201, 201)
-		r.context.fillStyle = "#000"
 		for (i in c.players) {
+			if (c.players[i].name == c.name) {
+				r.context.fillStyle = "#4BF"
+			}
+			else {
+				r.context.fillStyle = "#000"
+			}
 			r.context.fillRect(120 - Math.round(c.players[i]["x"] / c.mapDim * 100), 120 - Math.round(c.players[i]["y"] / c.mapDim * 100), 1, 1)
 		}
 	},
@@ -167,6 +173,9 @@ var Render = {
 		r.context.lineTo(r.getOffsetX() - c.mapDim, r.getOffsetY() + c.mapDim)
 		r.context.lineTo(r.getOffsetX() - c.mapDim, r.getOffsetY() - c.mapDim)
 		r.context.stroke()
+	},
+	background: function() {
+		get("body").style.backgroundPosition  = c.x + " " + c.y
 	},
 	getOffsetX: function(x) {
 		return Math.round(window.innerWidth / 2) + c.x
