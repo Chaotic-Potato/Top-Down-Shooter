@@ -16,6 +16,7 @@ var Server = {
 			s.clients.push(con)
 			con.x = 0
 			con.y = 0
+			con.health = 100
 			con.dir = "Down"
 			con.keyPress = {
 				"w" : false,
@@ -57,6 +58,15 @@ var Server = {
 						if (data[1]) {
 							con.dir = keyToDir[data[0]]
 						}
+					},
+					"respawn": function(data, con) {
+						if (con.health == 0) {
+							s.changeHealth(100, con)
+							con.x = 0
+							con.y = 0
+							con.dir = "Down"
+							con.sendUTF(JSON.stringify({"type" : "move", "data" : [con.name, con.x, con.y, con.dir]}))
+						}
 					}
 				}
 				if (typeFunc[m["type"]] != undefined) {
@@ -76,17 +86,19 @@ var Server = {
 	},
 	tick: function() {
 		for (i in s.clients) {
-			if (s.clients[i].keyPress["a"] && !s.clients[i].keyPress["d"]) {
-				s.addX(3, s.clients[i])
-			}
-			if (!s.clients[i].keyPress["a"] && s.clients[i].keyPress["d"]) {
-				s.addX(-3, s.clients[i])
-			}
-			if (s.clients[i].keyPress["w"] && !s.clients[i].keyPress["s"]) {
-				s.addY(3, s.clients[i])
-			}
-			if (!s.clients[i].keyPress["w"] && s.clients[i].keyPress["s"]) {
-				s.addY(-3, s.clients[i])
+			if (s.clients[i].health > 0) {
+				if (s.clients[i].keyPress["a"] && !s.clients[i].keyPress["d"]) {
+					s.addX(3, s.clients[i])
+				}
+				if (!s.clients[i].keyPress["a"] && s.clients[i].keyPress["d"]) {
+					s.addX(-3, s.clients[i])
+				}
+				if (s.clients[i].keyPress["w"] && !s.clients[i].keyPress["s"]) {
+					s.addY(3, s.clients[i])
+				}
+				if (!s.clients[i].keyPress["w"] && s.clients[i].keyPress["s"]) {
+					s.addY(-3, s.clients[i])
+				}
 			}
 		}
 	},
@@ -103,6 +115,17 @@ var Server = {
 			c.y = s.mapDim * (c.y > 0 ? 1 : -1)
 		}
 		s.updateCoords(c)
+	},
+	changeHealth(val, c) {
+		if (c.health + val > 0) {
+			c.health += val
+		}
+		else {
+			c.health = 0
+			c.dir = "Dead"
+			c.sendUTF(JSON.stringify({"type" : "move", "data" : [c.name, c.x, c.y, c.dir]}))
+		}
+		c.sendUTF(JSON.stringify({"type" : "health", "data" : c.health}))
 	},
 	updateCoords: function(c) {
 		s.send("move", [c.name, c.x, c.y, c.dir])
