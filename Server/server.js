@@ -76,7 +76,6 @@ var Server = {
 	},
 	tick: function() {
 		for (i in s.clients) {
-			var test = s.clients[i]
 			if (s.clients[i].keyPress["a"] && !s.clients[i].keyPress["d"]) {
 				s.addX(3, s.clients[i])
 			}
@@ -89,9 +88,6 @@ var Server = {
 			if (!s.clients[i].keyPress["w"] && s.clients[i].keyPress["s"]) {
 				s.addY(-3, s.clients[i])
 			}
-			if (test.x != s.clients[i].x || test.y != s.clients[i].y) {
-				s.updateCoords(s.clients[i])
-			}
 		}
 	},
 	addX: function(a, c) {
@@ -99,12 +95,14 @@ var Server = {
 		if (Math.abs(c.x) > s.mapDim) {
 			c.x = s.mapDim * (c.x > 0 ? 1 : -1)
 		}
+		s.updateCoords(c)
 	},
 	addY: function(a, c) {
 		c.y += a
 		if (Math.abs(c.y) > s.mapDim) {
 			c.y = s.mapDim * (c.y > 0 ? 1 : -1)
 		}
+		s.updateCoords(c)
 	},
 	updateCoords: function(c) {
 		s.send("move", [c.name, c.x, c.y, c.dir])
