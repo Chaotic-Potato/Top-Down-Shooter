@@ -86,14 +86,6 @@ var Client = {
 			}
 		}
 	},
-	vert: function(a) {
-		c.lastDir = (a ? "Up" : "Down")
-		c.send("move", c.lastDir)
-	},
-	hor: function(a) {
-		c.lastDir = (a ? "Left" : "Right")
-		c.send("move", c.lastDir)
-	},
 	send: function(t, m) {
 		c.sock.send(JSON.stringify({"type" : t, "data" : m}))
 	}
