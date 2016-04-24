@@ -62,6 +62,7 @@ var Client = {
 		r.border()
 		r.players()
 		r.names()
+		r.health()
 		r.map()
 	},
 	getPlayer: function(name) {
@@ -174,6 +175,12 @@ var Render = {
 		r.context.lineTo(r.getOffsetX() - c.mapDim, r.getOffsetY() + c.mapDim)
 		r.context.lineTo(r.getOffsetX() - c.mapDim, r.getOffsetY() - c.mapDim)
 		r.context.stroke()
+	},
+	health: function() {
+		r.context.font = "24px Courier New"
+		r.context.textAlign = "left"
+		r.context.fillStyle = "#000"
+		r.context.strokeText(c.health + "/100", 10, window.innerHeight - 10)
 	},
 	background: function() {
 		get("body").style.backgroundPosition  = c.x + " " + c.y
