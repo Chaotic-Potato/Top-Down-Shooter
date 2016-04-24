@@ -3,6 +3,7 @@ var Client = {
 	players: [],
 	x: 0,
 	y: 0,
+	health: 100,
 	mapDim: 3200,
 	keys: {
 		"w": false,
@@ -13,7 +14,7 @@ var Client = {
 	connect: function() {
 		c.loop = setInterval(c.tick, (1000 / c.tickRate))
 		if (c.sock == undefined){
-			c.sock = new WebSocket("ws://potatobox.no-ip.info:8989", 'echo-protocol')
+			c.sock = new WebSocket("ws://localhost:8989", 'echo-protocol')
 			c.name = get("name").value
 			get("connect").style.visibility = "hidden"
 			get("canvas").style.visibility = "visible"
@@ -38,6 +39,9 @@ var Client = {
 					},
 					"map": function(data) {
 						c.mapDim = data
+					},
+					"health": function(data) {
+						c.health = data
 					}
 				}
 				if (typeFunc[m["type"]] != undefined) {
@@ -88,8 +92,10 @@ var Client = {
 	},
 	send: function(t, m) {
 		c.sock.send(JSON.stringify({"type" : t, "data" : m}))
+	},
+	respawn: function() {
+		setTimeout(function() {c.send("respawn", "")} , 3000)
 	}
-	
 }
 
 var Render = {
@@ -118,6 +124,9 @@ var Render = {
 				c.x = c.players[i]["x"]
 				c.y = c.players[i]["y"]
 				c.dir = c.players[i]["dir"]
+				if (c.dir == "Dead") {
+					c.respawn()
+				}
 			}
 			else {
 				r.drawImage("player" + c.players[i]["dir"], r.getOffsetX() - 32 - c.players[i]["x"], r.getOffsetY() - 32 - c.players[i]["y"], 64, 64)
