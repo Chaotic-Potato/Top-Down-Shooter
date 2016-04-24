@@ -65,7 +65,7 @@ var Server = {
 							con.x = 0
 							con.y = 0
 							con.dir = "Down"
-							con.sendUTF(JSON.stringify({"type" : "move", "data" : [con.name, con.x, con.y, con.dir]}))
+							s.send(JSON.stringify({"move",[con.name, con.x, con.y, con.dir]}))
 						}
 					}
 				}
@@ -123,7 +123,7 @@ var Server = {
 		else {
 			c.health = 0
 			c.dir = "Dead"
-			c.sendUTF(JSON.stringify({"type" : "move", "data" : [c.name, c.x, c.y, c.dir]}))
+			s.send(JSON.stringify({"move", [c.name, c.x, c.y, c.dir]}))
 		}
 		c.sendUTF(JSON.stringify({"type" : "health", "data" : c.health}))
 	},
