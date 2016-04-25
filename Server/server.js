@@ -19,25 +19,25 @@ var Server = {
 			con.health = 100
 			con.dir = "Down"
 			con.keyPress = {
-				"w" : false,
-				"s" : false,
-				"a" : false,
-				"d" : false,
+				w: false,
+				s: false,
+				a: false,
+				d: false,
 			}
 			con.on('message', function(message) {
-				var m = JSON.parse(message["utf8Data"])
+				var m = JSON.parse(message.utf8Data)
 				typeFunc = {
 					"init": function(data, con) {
 						if (s.nameValid(data)) {
 							con.name = data
 							s.send("connect", con.name)
-							con.sendUTF(JSON.stringify({"type" : "map", "data" : s.mapDim}))
+							con.sendUTF(JSON.stringify({type: "map", data: s.mapDim}))
 							s.updateCoords(con)
 							for (i in s.clients) {
 								if (s.clients[i] != con) {
-									con.sendUTF(JSON.stringify({"type" : "connect", "data" : s.clients[i].name}))
+									con.sendUTF(JSON.stringify({type: "connect", data: s.clients[i].name}))
 								}
-								con.sendUTF(JSON.stringify({"type" : "move", "data" : [s.clients[i].name, s.clients[i].x, s.clients[i].y, s.clients[i].dir]}))
+								con.sendUTF(JSON.stringify({type: "move", data: [s.clients[i].name, s.clients[i].x, s.clients[i].y, s.clients[i].dir]}))
 							}
 						}
 						else {
@@ -49,10 +49,10 @@ var Server = {
 					},
 					"key": function(data, con) {
 						var keyToDir = {
-							"w" : "Up",
-							"s" : "Down",
-							"a" : "Left",
-							"d" : "Right"
+							w: "Up",
+							s: "Down",
+							a: "Left",
+							d: "Right"
 						}
 						con.keyPress[data[0]] = data[1]
 						if (data[1]) {
@@ -65,12 +65,12 @@ var Server = {
 							con.x = 0
 							con.y = 0
 							con.dir = "Down"
-							con.sendUTF(JSON.stringify({"type" : "move", "data" : [con.name, con.x, con.y, con.dir]}))
+							con.sendUTF(JSON.stringify({type: "move", data: [con.name, con.x, con.y, con.dir]}))
 						}
 					}
 				}
-				if (typeFunc[m["type"]] != undefined) {
-					typeFunc[m["type"]](m["data"], con)
+				if (typeFunc[m.type] != undefined) {
+					typeFunc[m.type](m.data, con)
 				}
 			})
 			con.on('close', function(r, desc) {
@@ -87,16 +87,16 @@ var Server = {
 	tick: function() {
 		for (i in s.clients) {
 			if (s.clients[i].health > 0) {
-				if (s.clients[i].keyPress["a"] && !s.clients[i].keyPress["d"]) {
+				if (s.clients[i].keyPress.a && !s.clients[i].keyPress.d) {
 					s.addX(3, s.clients[i])
 				}
-				if (!s.clients[i].keyPress["a"] && s.clients[i].keyPress["d"]) {
+				if (!s.clients[i].keyPress.a && s.clients[i].keyPress.d) {
 					s.addX(-3, s.clients[i])
 				}
-				if (s.clients[i].keyPress["w"] && !s.clients[i].keyPress["s"]) {
+				if (s.clients[i].keyPress.w && !s.clients[i].keyPress.s) {
 					s.addY(3, s.clients[i])
 				}
-				if (!s.clients[i].keyPress["w"] && s.clients[i].keyPress["s"]) {
+				if (!s.clients[i].keyPress.w && s.clients[i].keyPress.s) {
 					s.addY(-3, s.clients[i])
 				}
 			}
@@ -123,16 +123,16 @@ var Server = {
 		else {
 			c.health = 0
 			c.dir = "Dead"
-			c.sendUTF(JSON.stringify({"type" : "move", "data" : [c.name, c.x, c.y, c.dir]}))
+			c.sendUTF(JSON.stringify({type: "move", data: [c.name, c.x, c.y, c.dir]}))
 		}
-		c.sendUTF(JSON.stringify({"type" : "health", "data" : c.health}))
+		c.sendUTF(JSON.stringify({type: "health", data: c.health}))
 	},
 	updateCoords: function(c) {
 		s.send("move", [c.name, c.x, c.y, c.dir])
 	},
 	send: function(t, m) {
 		for (x in s.clients){
-			s.clients[x].sendUTF(JSON.stringify({"type" : t, "data" : m}))
+			s.clients[x].sendUTF(JSON.stringify({type: t, data: m}))
 		}
 	},
 	nameValid: function(name) {
