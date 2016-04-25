@@ -23,16 +23,16 @@ var Client = {
 				var m = JSON.parse(evt.data)
 				typeFunc = {
 					"move": function(data) {
-						c.getPlayer(data[0])["x"] = data[1]
-						c.getPlayer(data[0])["y"] = data[2]
-						c.getPlayer(data[0])["dir"] = data[3]
+						c.getPlayer(data[0]).x = data[1]
+						c.getPlayer(data[0]).y = data[2]
+						c.getPlayer(data[0]).dir = data[3]
 					},
 					"connect": function(data) {
 						c.players.push({"name" : data})
 					},
 					"disconnect": function(data) {
 						for (i in c.players) {
-							if (c.players[i]["name"] == data) {
+							if (c.players[i].name == data) {
 								c.players.splice(i, 1)
 							}
 						}
@@ -44,8 +44,8 @@ var Client = {
 						c.health = data
 					}
 				}
-				if (typeFunc[m["type"]] != undefined) {
-					typeFunc[m["type"]](m["data"])
+				if (typeFunc[m.type] != undefined) {
+					typeFunc[m.type](m.data)
 				}
 			}
 			c.sock.onopen = function() {
@@ -67,7 +67,7 @@ var Client = {
 	},
 	getPlayer: function(name) {
 		for (i in c.players) {
-			if (c.players[i]["name"] == name) {
+			if (c.players[i].name == name) {
 				return c.players[i]
 			}
 		}
@@ -121,16 +121,16 @@ var Render = {
 	},
 	players: function() {
 		for (i in c.players) {
-			if (c.players[i]["name"] == c.name) {
-				c.x = c.players[i]["x"]
-				c.y = c.players[i]["y"]
-				c.dir = c.players[i]["dir"]
+			if (c.players[i].name == c.name) {
+				c.x = c.players[i].x
+				c.y = c.players[i].y
+				c.dir = c.players[i].dir
 				if (c.dir == "Dead") {
 					c.respawn()
 				}
 			}
 			else {
-				r.drawImage("player" + c.players[i]["dir"], r.getOffsetX() - 32 - c.players[i]["x"], r.getOffsetY() - 32 - c.players[i]["y"], 64, 64)
+				r.drawImage("player" + c.players[i].dir, r.getOffsetX() - 32 - c.players[i].x, r.getOffsetY() - 32 - c.players[i].y, 64, 64)
 			}
 		}
 		r.drawImage("player" + c.dir, Math.round(window.innerWidth / 2) - 32, Math.round(window.innerHeight / 2) - 32, 64, 64)
@@ -162,9 +162,9 @@ var Render = {
 		for (i in c.players) {
 			var width =  r.context.measureText(c.players[i].name).width
 			r.context.fillStyle = "rgba(187, 187, 187, 0.5)"
-			r.context.fillRect(r.getOffsetX() - c.players[i]["x"] - width / 2 - 2, r.getOffsetY() - c.players[i]["y"] - 56, width + 4, 20)
+			r.context.fillRect(r.getOffsetX() - c.players[i].x - width / 2 - 2, r.getOffsetY() - c.players[i].y - 56, width + 4, 20)
 			r.context.fillStyle = "rgba(0, 0, 0, 0.5)"
-			r.context.strokeText(c.players[i].name,r.getOffsetX() - c.players[i]["x"], r.getOffsetY() - c.players[i]["y"] - 40)
+			r.context.strokeText(c.players[i].name,r.getOffsetX() - c.players[i].x, r.getOffsetY() - c.players[i].y - 40)
 		}
 	},
 	border: function() {
