@@ -1,20 +1,25 @@
 var Client = {
 	tickRate: 100,
 	players: [],
+	bullets: [],
 	x: 0,
 	y: 0,
 	health: 100,
 	mapDim: 3200,
+	gun: 0,
 	keys: {
-		"w": false,
-		"s" : false,
-		"a" : false,
-		"d" : false
+		w: false,
+		s : false,
+		a : false,
+		d : false,
+		1 : false,
+		2 : false,
+		3 : false
 	},
 	connect: function() {
 		c.loop = setInterval(c.tick, (1000 / c.tickRate))
 		if (c.sock == undefined){
-			c.sock = new WebSocket("ws://potatobox.no-ip.info:8989", 'echo-protocol')
+			c.sock = new WebSocket("ws://localhost:8989", 'echo-protocol')
 			c.name = get("name").value
 			get("connect").style.visibility = "hidden"
 			get("canvas").style.visibility = "visible"
@@ -22,30 +27,39 @@ var Client = {
 			c.sock.onmessage = function (evt) { 
 				var m = JSON.parse(evt.data)
 				typeFunc = {
-					"move": function(data) {
+					message: function(data) {
+						console.log(data)
+					},
+					move: function(data) {
 						c.getPlayer(data[0])["x"] = data[1]
 						c.getPlayer(data[0])["y"] = data[2]
 						c.getPlayer(data[0])["dir"] = data[3]
 					},
-					"connect": function(data) {
+					connect: function(data) {
 						c.players.push({"name" : data})
 					},
-					"disconnect": function(data) {
+					disconnect: function(data) {
 						for (i in c.players) {
 							if (c.players[i]["name"] == data) {
 								c.players.splice(i, 1)
 							}
 						}
 					},
-					"map": function(data) {
+					map: function(data) {
 						c.mapDim = data
 					},
-					"health": function(data) {
+					health: function(data) {
 						c.health = data
+					},
+					gun: function(data) {
+						c.gun = data
+					},
+					bullet: function(data) {
+						c.bullets.push(new Bullet(data[0], data[1], data[2]))
 					}
 				}
-				if (typeFunc[m["type"]] != undefined) {
-					typeFunc[m["type"]](m["data"])
+				if (typeFunc[m.type] != undefined) {
+					typeFunc[m.type](m.data)
 				}
 			}
 			c.sock.onopen = function() {
@@ -62,7 +76,9 @@ var Client = {
 		r.border()
 		r.players()
 		r.names()
+		c.bulletTick()
 		r.health()
+		r.inventory()
 		r.map()
 	},
 	getPlayer: function(name) {
@@ -72,6 +88,17 @@ var Client = {
 			}
 		}
 		return false
+	},
+	bulletTick: function() {
+		for (i in c.bullets) {
+			c.bullets[i].tick()
+		}
+		for (var i = c.bullets.length - 1; i > -1; i--) {
+			if (c.bullets[i].age > 1000) {
+				c.bullets.splice(i, 1)
+			}
+		}
+		r.bulletRender()
 	},
 	keyDown: function(evt) {
 		var key = String.fromCharCode(evt.keyCode).toLowerCase()
@@ -92,10 +119,13 @@ var Client = {
 		}
 	},
 	send: function(t, m) {
-		c.sock.send(JSON.stringify({"type" : t, "data" : m}))
+		c.sock.send(JSON.stringify({type : t, data : m}))
 	},
 	respawn: function() {
-		setTimeout(function() {c.send("respawn", "")} , 3000)
+		setTimeout(function() {c.send("respawn", "")} , 500)
+	},
+	click: function(evt) {
+		c.send("shot", (Math.atan(((window.innerWidth /2) - evt.offsetX) / (evt.offsetY - (window.innerHeight /2))) * 180 / Math.PI + 450 + (evt.offsetY < (window.innerHeight /2) ? 0 : 180)) % 360)
 	}
 }
 
@@ -156,6 +186,20 @@ var Render = {
 			r.context.fillRect(120 - Math.round(c.players[i]["x"] / c.mapDim * 100), 120 - Math.round(c.players[i]["y"] / c.mapDim * 100), 1, 1)
 		}
 	},
+	inventory: function() {
+		var weapons = ["pistol", "smg", "rifle"]
+		for (var i = 0; i < 3; i++) {
+			if (i == c.gun) {
+				r.context.fillStyle = "rgba(127, 127, 127, 0.5)"
+			}
+			else {
+				r.context.fillStyle = "rgba(187, 187, 187, 0.5)"
+			}
+			r.context.fillRect(window.innerWidth / 2 + (i * 80) - 112, 10, 64, 64)
+			r.context.fillRect(window.innerWidth / 2 + (i * 80) - 112, 10, 64, 64)
+			r.drawImage(weapons[i], window.innerWidth / 2 + (i * 80) - 112, 10, 64, 64)
+		}
+	},
 	names: function() {
 		r.context.font = "18px Courier New"
 		r.context.textAlign = "center"
@@ -182,20 +226,41 @@ var Render = {
 		r.context.fillStyle = "#000"
 		r.context.strokeText(c.health + "/100", 10, window.innerHeight - 10)
 	},
+	bulletRender: function () {
+		for (i in c.bullets) {
+			r.drawImage("bullet", r.getOffsetX() - c.bullets[i].x - 4, r.getOffsetY() - c.bullets[i].y - 4, 8, 8)
+		}
+	},
 	background: function() {
 		get("body").style.backgroundPosition  = c.x + " " + c.y
 	},
-	getOffsetX: function(x) {
+	getOffsetX: function() {
 		return Math.round(window.innerWidth / 2) + c.x
 	},
-	getOffsetY: function(y) {
-		return Math.round(window.innerHeight / 2) + c.y
+	getOffsetY: function() {
+		return Math.round(window.innerHeight / 2) + c.y 
 	},
 	drawImage: function(id, x, y, w, h) {
 		r.context.drawImage(get(id), x, y, w, h)
 	},
 	clear: function() {
 		r.context.clearRect(0, 0, r.canvas.width, r.canvas.height)
+	}
+}
+
+var Bullet = function(x, y, a) {
+	this.x = x
+	this.y = y
+	this.velX = Math.cos(a * Math.PI / 180) * 100
+	this.velY = Math.sin(a * Math.PI / 180) * 100
+	this.age = 0
+}
+
+Bullet.prototype = {
+	tick: function() {
+		this.age++
+		this.x += this.velX
+		this.y += this.velY
 	}
 }
 
