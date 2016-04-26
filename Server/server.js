@@ -1,7 +1,7 @@
 var Server = {
 	clients: [],
 	tickRate: 100,
-	mapDim: 1600,
+	mapDim: 800,
 	init: function() {
 		s.loop = setInterval(s.tick, (1000 / s.tickRate))
 		s.WebSocketServer = require('websocket').server
@@ -80,15 +80,15 @@ var Server = {
 					shot: function(data, con) {
 						s.send("bullet", [con.x, con.y, data])
 						var hitBoxes = [
-							[-9, 7, 9, 21, 1.6],
-							[-9, -15, 9, 9, 1],
+							[7, 9, 1.6],
+							[-15, 9, 1],
 							[-9, -33, 9, -13, 0.6],
 						]
 						var guns = [-25, -40, -60]
 						for (x in s.clients) {
 							for (var n = 0; n < 3; n++) {
-								if (s.hitBoxReg(s.clients[x].x + hitBoxes[n][0], s.clients[x].y + hitBoxes[n][1], s.clients[x].x + hitBoxes[n][2], s.clients[x].y + hitBoxes[n][3], con.x, con.y, data) && con != s.clients[x] && s.clients[x].health > 0) {
-									s.changeHealth(s.clients[x], guns[con.gun] * hitBoxes[n][4])
+								if (s.hitBoxReg(s.clients[x].x - 9, s.clients[x].y + hitBoxes[n][0], s.clients[x].x + 9, s.clients[x].y + hitBoxes[n][1], con.x, con.y, data) && con != s.clients[x] && s.clients[x].health > 0) {
+									s.changeHealth(s.clients[x], guns[con.gun] * hitBoxes[n][2])
 								}
 							}
 						}
