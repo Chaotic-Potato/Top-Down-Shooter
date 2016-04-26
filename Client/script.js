@@ -5,7 +5,7 @@ var Client = {
 	x: 0,
 	y: 0,
 	health: 100,
-	mapDim: 3200,
+	mapDim: 800,
 	gun: 0,
 	keys: {
 		w : false,
