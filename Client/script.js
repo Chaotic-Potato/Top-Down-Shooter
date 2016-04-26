@@ -183,7 +183,7 @@ var Render = {
 			else {
 				r.context.fillStyle = "#000"
 			}
-			r.context.fillRect(120 - Math.round(c.players[i]["x"] / c.mapDim * 100), 120 - Math.round(c.players[i]["y"] / c.mapDim * 100), 1, 1)
+			r.context.fillRect(119 - Math.round(c.players[i]["x"] / c.mapDim * 100), 119 - Math.round(c.players[i]["y"] / c.mapDim * 100), 3, 3)
 		}
 	},
 	inventory: function() {
