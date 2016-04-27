@@ -56,6 +56,12 @@ var Client = {
 					},
 					bullet: function(data) {
 						c.bullets.push(new Bullet(data[0], data[1], data[2]))
+					},
+					kills: function(data) {
+						c.getPlayer(data[0]).kills = data[1]
+					},
+					deaths: function(data) {
+						c.getPlayer(data[0]).deaths = data[1]
 					}
 				}
 				if (typeFunc[m.type] != undefined) {
@@ -79,6 +85,9 @@ var Client = {
 		c.bulletTick()
 		r.health()
 		r.inventory()
+		if (r.showScore) {
+			r.score()
+		}
 		r.map()
 	},
 	getPlayer: function(name) {
@@ -108,6 +117,9 @@ var Client = {
 				c.send("key", [key, true])
 			}
 		}
+		if (key == "e") {
+			r.showScore = true
+		}
 	},
 	keyUp: function(evt) {
 		var key = String.fromCharCode(evt.keyCode).toLowerCase()
@@ -116,6 +128,9 @@ var Client = {
 				c.keys[key] = false
 				c.send("key", [key, false])
 			}
+		}
+		if (key == "e") {
+			r.showScore = false
 		}
 	},
 	send: function(t, m) {
@@ -242,6 +257,25 @@ var Render = {
 	},
 	drawImage: function(id, x, y, w, h) {
 		r.context.drawImage(get(id), x, y, w, h)
+	},
+	score: function() {
+		r.context.textAlign = "left"
+		var width = 0
+		for (i in c.players) {
+			width =  Math.max(r.context.measureText(c.players[i].name).width, width)
+		}
+		width += 130
+		r.context.fillStyle = "rgba(187, 187, 187, 0.5)"
+		r.context.fillRect(window.innerWidth / 2 - (width /2), 150, width, (c.players.length + 1) * 25)
+		r.context.strokeText("NAME", window.innerWidth / 2 - (width /2), 170)
+		r.context.strokeText("KLL", window.innerWidth / 2 + (width /2) - 110, 170)
+		r.context.strokeText("DTH", window.innerWidth / 2 + (width /2) - 50, 170)
+		for (i in c.players) {
+			r.context.fillStyle = "rgba(0, 0, 0, 0.5)"
+			r.context.strokeText(c.players[i].name, window.innerWidth / 2 - (width /2), 195 + (25 * i))
+			r.context.strokeText(c.players[i].kills, window.innerWidth / 2 + (width /2) - 110, 195 + (25 * i))
+			r.context.strokeText(c.players[i].deaths, window.innerWidth / 2 + (width /2) - 50, 195 + (25 * i))
+		}
 	},
 	clear: function() {
 		r.context.clearRect(0, 0, r.canvas.width, r.canvas.height)
