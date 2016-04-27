@@ -260,7 +260,7 @@ var Render = {
 	},
 	score: function() {
 		r.context.textAlign = "left"
-		var width = 0
+		var width = 60
 		for (i in c.players) {
 			if (c.players[i].kills == undefined) {
 				c.players[i].kills = 0
