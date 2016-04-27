@@ -80,14 +80,14 @@ var Server = {
 					shot: function(data, con) {
 						s.send("bullet", [con.x, con.y, data])
 						var hitBoxes = [
-							[7, 9, 1.6],
-							[-15, 9, 1],
-							[-9, -33, 9, -13, 0.6],
+							[8, 20, 1.6],
+							[-14, 8, 1],
+							[-32, -14, 0.6],
 						]
 						var guns = [-25, -40, -60]
 						for (x in s.clients) {
 							for (var n = 0; n < 3; n++) {
-								if (s.hitBoxReg(s.clients[x].x - 9, s.clients[x].y + hitBoxes[n][0], s.clients[x].x + 9, s.clients[x].y + hitBoxes[n][1], con.x, con.y, data) && con != s.clients[x] && s.clients[x].health > 0) {
+								if (s.hitBoxReg(s.clients[x].x - 8, s.clients[x].y + hitBoxes[n][0], s.clients[x].x + 8, s.clients[x].y + hitBoxes[n][1], con.x, con.y, data) && con != s.clients[x] && s.clients[x].health > 0) {
 									s.changeHealth(s.clients[x], guns[con.gun] * hitBoxes[n][2])
 								}
 							}
