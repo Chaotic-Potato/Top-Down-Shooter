@@ -262,6 +262,12 @@ var Render = {
 		r.context.textAlign = "left"
 		var width = 0
 		for (i in c.players) {
+			if (c.players[i].kills == undefined) {
+				c.players[i].kills = 0
+			} 
+			if (c.players[i].deaths == undefined) {
+				c.players[i].deaths = 0
+			} 
 			width =  Math.max(r.context.measureText(c.players[i].name).width, width)
 		}
 		width += 130
