@@ -18,6 +18,8 @@ var Server = {
 			con.y = 0
 			con.health = 100
 			con.gun = 0
+			con.kills = 0
+			con.deaths = 0
 			con.dir = "Down"
 			con.keyPress = {
 				w : false,
@@ -42,6 +44,8 @@ var Server = {
 									con.sendUTF(JSON.stringify({type : "connect", data : s.clients[i].name}))
 								}
 								con.sendUTF(JSON.stringify({type : "move", data : [s.clients[i].name, s.clients[i].x, s.clients[i].y, s.clients[i].dir]}))
+								con.sendUTF(JSON.stringify({type : "kills", data : [s.clients[i].name, s.clients[i].kills]}))
+								con.sendUTF(JSON.stringify({type : "deaths", data : [s.clients[i].name, s.clients[i].deaths]}))
 							}
 						}
 						else {
@@ -78,17 +82,19 @@ var Server = {
 						}
 					},
 					shot: function(data, con) {
-						s.send("bullet", [con.x, con.y, data])
+						var inacc = [5, 2, 1]
 						var hitBoxes = [
 							[8, 20, 1.6],
 							[-14, 8, 1],
 							[-32, -14, 0.6],
 						]
-						var guns = [-25, -40, -60]
+						var dmg = [-25, -40, -60]
+						data = (data + Math.pow(Math.random(), 2) * inacc[con.gun] * (Math.random() > 0.5 ? -1 : 1)) + 360 % 360
+						s.send("bullet", [con.x, con.y, data])
 						for (x in s.clients) {
 							for (var n = 0; n < 3; n++) {
 								if (s.hitBoxReg(s.clients[x].x - 8, s.clients[x].y + hitBoxes[n][0], s.clients[x].x + 8, s.clients[x].y + hitBoxes[n][1], con.x, con.y, data) && con != s.clients[x] && s.clients[x].health > 0) {
-									s.changeHealth(s.clients[x], guns[con.gun] * hitBoxes[n][2])
+									s.changeHealth(s.clients[x], dmg[con.gun] * hitBoxes[n][2], con)
 								}
 							}
 						}
@@ -141,13 +147,19 @@ var Server = {
 		}
 		s.updateCoords(c)
 	},
-	changeHealth(c, val) {
+	changeHealth(c, val, shooter) {
 		if (c.health + val > 0) {
 			c.health += val
 		}
 		else {
 			c.health = 0
 			c.dir = "Dead"
+			c.deaths += 1
+			s.send("deaths", [c.name, c.deaths])
+			if (shooter != undefined) {
+				shooter.kills += 1
+				s.send("kills", [shooter.name, shooter.kills])
+			}
 			s.send("move", [c.name, c.x, c.y, c.dir])
 		}
 		c.sendUTF(JSON.stringify({type : "health", data : c.health}))
