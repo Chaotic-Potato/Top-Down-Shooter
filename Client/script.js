@@ -18,7 +18,7 @@ var Client = {
 	},
 	connect: function() {
 		c.loop = setInterval(c.tick, (1000 / c.tickRate))
-		if (c.sock == undefined){
+		if (!c.sock){
 			c.sock = new WebSocket("ws://potatobox.no-ip.info:8989", 'echo-protocol')
 			c.name = get("name").value
 			get("connect").style.visibility = "hidden"
@@ -64,7 +64,7 @@ var Client = {
 						c.getPlayer(data[0]).deaths = data[1]
 					}
 				}
-				if (typeFunc[m.type] != undefined) {
+				if (typeFunc[m.type]) {
 					typeFunc[m.type](m.data)
 				}
 			}
@@ -111,11 +111,9 @@ var Client = {
 	},
 	keyDown: function(evt) {
 		var key = String.fromCharCode(evt.keyCode).toLowerCase()
-		if (c.keys[key] != undefined) {
-			if (!c.keys[key]) {
-				c.keys[key] = true
-				c.send("key", [key, true])
-			}
+		if (c.keys[key] != undefined && !c.keys[key]) {
+			c.keys[key] = true
+			c.send("key", [key, true])
 		}
 		if (key == "e") {
 			r.showScore = true
@@ -203,7 +201,7 @@ var Render = {
 	},
 	inventory: function() {
 		var weapons = ["pistol", "smg", "rifle"]
-		for (var i = 0; i < 3; i++) {
+		for (i in weapons) {
 			if (i == c.gun) {
 				r.context.fillStyle = "rgba(127, 127, 127, 0.5)"
 			}
@@ -262,12 +260,8 @@ var Render = {
 		r.context.textAlign = "left"
 		var width = 60
 		for (i in c.players) {
-			if (c.players[i].kills == undefined) {
-				c.players[i].kills = 0
-			} 
-			if (c.players[i].deaths == undefined) {
-				c.players[i].deaths = 0
-			} 
+			c.players[i].kills = c.players[i].kills || 0
+			c.players[i].deaths = c.players[i].deaths || 0
 			width =  Math.max(r.context.measureText(c.players[i].name).width, width)
 		}
 		width += 130
