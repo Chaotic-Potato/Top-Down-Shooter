@@ -92,7 +92,7 @@ var Server = {
 								for (x in s.clients) {
 									for (var n = 0; n < 3; n++) {
 										if (s.hitBoxReg(s.clients[x].x - 8, s.clients[x].y + v.hitBoxes[n][0], s.clients[x].x + 8, s.clients[x].y + v.hitBoxes[n][1], con.x, con.y, data) && con != s.clients[x] && s.clients[x].health > 0) {
-											s.changeHealth(s.clients[x], v.dmg[con.gun] * hitBoxes[n][2], con)
+											s.changeHealth(s.clients[x], v.dmg[con.gun] * v.hitBoxes[n][2], con)
 										}
 									}
 								}
