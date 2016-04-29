@@ -21,15 +21,19 @@ var Server = {
 			con.kills = 0
 			con.deaths = 0
 			con.dir = "Down"
+			con.cooldown = 0
 			con.keyPress = {
 				w : false,
 				s : false,
 				a : false,
 				d : false,
+				r : false,
 				1 : false,
 				2 : false,
 				3 : false
 			}
+			con.reload = 0
+			con.ammo = 13
 			con.on('message', function(message) {
 				var m = JSON.parse(message.utf8Data)
 				typeFunc = {
@@ -55,21 +59,18 @@ var Server = {
 						}
 					},
 					key: function(data, con) {
-						var gun = ["1", "2", "3"]
-						if (gun.indexOf(data[0]) != -1 && data[1]) {
-							con.gun = gun.indexOf(data[0])
-							con.sendUTF(JSON.stringify({type : "gun", data : gun.indexOf(data[0])}))
+						if (v.gun.indexOf(data[0]) != -1 && data[1]) {
+							con.gun = v.gun.indexOf(data[0])
+							con.sendUTF(JSON.stringify({type : "gun", data : v.gun.indexOf(data[0])}))
+							s.changeAmmo(con, 0)
+							s.reload(con)
 						}
-						else
-						var keyToDir = {
-							w : "Up",
-							s : "Down",
-							a : "Left",
-							d : "Right"
+						else if (data[0] == "r") {
+							s.reload(con)
 						}
 						con.keyPress[data[0]] = data[1]
-						if (data[1] && gun.indexOf(data[0]) == -1) {
-							con.dir = keyToDir[data[0]]
+						if (data[1] && v.gun.indexOf(data[0]) == -1) {
+							con.dir = v.keyToDir[data[0]]
 						}
 					},
 					respawn: function(data, con) {
@@ -82,20 +83,22 @@ var Server = {
 						}
 					},
 					shot: function(data, con) {
-						var inacc = [5, 2, 1]
-						var hitBoxes = [
-							[8, 20, 1.6],
-							[-14, 8, 1],
-							[-32, -14, 0.6],
-						]
-						var dmg = [-25, -40, -60]
-						data = (data + Math.pow(Math.random(), 2) * inacc[con.gun] * (Math.random() > 0.5 ? -1 : 1)) + 360 % 360
-						s.send("bullet", [con.x, con.y, data])
-						for (x in s.clients) {
-							for (var n = 0; n < 3; n++) {
-								if (s.hitBoxReg(s.clients[x].x - 8, s.clients[x].y + hitBoxes[n][0], s.clients[x].x + 8, s.clients[x].y + hitBoxes[n][1], con.x, con.y, data) && con != s.clients[x] && s.clients[x].health > 0) {
-									s.changeHealth(s.clients[x], dmg[con.gun] * hitBoxes[n][2], con)
+						if (con.cooldown + con.reload == 0) {
+							if (con.ammo > 0) {
+								s.changeAmmo(con, con.ammo - 1)
+								data = (data + Math.pow(Math.random(), 2) * v.inacc[con.gun] * (Math.random() > 0.5 ? -1 : 1)) + 360 % 360
+								s.send("bullet", [con.x, con.y, data])
+								con.cooldown = v.cooldown[con.gun]
+								for (x in s.clients) {
+									for (var n = 0; n < 3; n++) {
+										if (s.hitBoxReg(s.clients[x].x - 8, s.clients[x].y + v.hitBoxes[n][0], s.clients[x].x + 8, s.clients[x].y + v.hitBoxes[n][1], con.x, con.y, data) && con != s.clients[x] && s.clients[x].health > 0) {
+											s.changeHealth(s.clients[x], v.dmg[con.gun] * hitBoxes[n][2], con)
+										}
+									}
 								}
+							}
+							if (con.ammo == 0) {
+								s.reload(con)
 							}
 						}
 					} 
@@ -131,6 +134,13 @@ var Server = {
 					s.addY(-3, s.clients[i])
 				}
 			}
+			s.clients[i].cooldown -= (s.clients[i].cooldown > 0 ? 1 : 0)
+			if (s.clients[i].reload > 0) {
+				s.clients[i].reload--
+				if (s.clients[i].reload == 0) {
+					s.changeAmmo(s.clients[i], v.ammo[s.clients[i].gun])
+				}
+			}
 		}
 	},
 	addX: function(a, c) {
@@ -163,6 +173,10 @@ var Server = {
 			s.send("move", [c.name, c.x, c.y, c.dir])
 		}
 		c.sendUTF(JSON.stringify({type : "health", data : c.health}))
+	},
+	changeAmmo: function(c, a) {
+		c.ammo = a
+		c.sendUTF(JSON.stringify({type : "ammo", data : c.ammo}))
 	},
 	updateCoords: function(c) {
 		s.send("move", [c.name, c.x, c.y, c.dir])
@@ -204,7 +218,32 @@ var Server = {
 		var ang = (xa == xb ? 90 : Math.acos((xb - xa) / Math.sqrt(Math.pow((xa - xb), 2) + Math.pow((ya - yb), 2))) * 180 / Math.PI)
 		return (ya > yb ? -1 * ang + 360 : ang)
 	},
+	reload: function(c) {
+		if (c.reload == 0) {
+			c.reload = v.reload[c.gun]
+		}
+	},
 	angleComp: function(a, b) {return Math.min(((a - b + 360) % 360), ((b - a + 360) % 360));}
+}
+
+var Values = {
+	gun: ["1", "2", "3"],
+	keyToDir: {
+		w : "Up",
+		s : "Down",
+		a : "Left",
+		d : "Right"
+	},
+	inacc: [5, 2, 1],
+	cooldown: [30,17,20],
+	hitBoxes: [
+		[8, 20, 1.6],
+		[-14, 8, 1],
+		[-32, -14, 0.6],
+	],
+	dmg: [-25, -40, -60],
+	reload: [50,70,100],
+	ammo: [13, 75, 40],
 }
 
 function decode(string) {
@@ -216,5 +255,6 @@ function decode(string) {
 }
 
 var s = Server
+var v = Values
 
 s.init()

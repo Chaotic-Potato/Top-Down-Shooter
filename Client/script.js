@@ -7,11 +7,13 @@ var Client = {
 	health: 100,
 	mapDim: 800,
 	gun: 0,
+	ammo: 13,
 	keys: {
 		w : false,
 		s : false,
 		a : false,
 		d : false,
+		r : false,
 		1 : false,
 		2 : false,
 		3 : false
@@ -62,6 +64,9 @@ var Client = {
 					},
 					deaths: function(data) {
 						c.getPlayer(data[0]).deaths = data[1]
+					},
+					ammo: function(data) {
+						c.ammo = data
 					}
 				}
 				if (typeFunc[m.type] != undefined) {
@@ -84,6 +89,7 @@ var Client = {
 		r.names()
 		c.bulletTick()
 		r.health()
+		r.ammo()
 		r.inventory()
 		if (r.showScore) {
 			r.score()
@@ -240,6 +246,13 @@ var Render = {
 		r.context.textAlign = "left"
 		r.context.fillStyle = "#000"
 		r.context.strokeText(c.health + "/100", 10, window.innerHeight - 10)
+	},
+	ammo: function() {
+		var ammo = [13, 75, 40]
+		r.context.font = "24px Courier New"
+		r.context.textAlign = "right"
+		r.context.fillStyle = "#000"
+		r.context.strokeText(c.ammo + "/" + ammo[c.gun], window.innerWidth - 10, window.innerHeight - 10)
 	},
 	bulletRender: function () {
 		for (i in c.bullets) {
