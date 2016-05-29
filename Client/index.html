@@ -18,7 +18,8 @@
 		<div id="connect" style="position:absolute;">
 			<span>Name:</span>
 			<input id="name">
-			<button onclick="c.connect()">Connect</button>
+			<button onclick="c.connect('potatobox.no-ip.info')">Connect</button>
+			<button onclick="c.connect('127.0.0.1')">Connect Local</button>
 		</div>
 		<canvas id="canvas" style="visibility:hidden;position:absolute" onclick="c.click(event)"></canvas>
 		<canvas id="map" style="visibility:hidden;position:absolute"></canvas>

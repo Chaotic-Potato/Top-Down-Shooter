@@ -87,7 +87,7 @@ var Server = {
 							if (con.ammo > 0) {
 								s.changeAmmo(con, con.ammo - 1)
 								data = (data + Math.pow(Math.random(), 2) * v.inacc[con.gun] * (Math.random() > 0.5 ? -1 : 1)) + 360 % 360
-								s.send("bullet", [con.x, con.y, data])
+								s.send("bullet", [con.x, con.y, data, con.gun])
 								con.cooldown = v.cooldown[con.gun]
 								for (x in s.clients) {
 									for (var n = 0; n < 3; n++) {
