@@ -18,10 +18,10 @@ var Client = {
 		2 : false,
 		3 : false
 	},
-	connect: function() {
+	connect: function(host) {
 		c.loop = setInterval(c.tick, (1000 / c.tickRate))
 		if (c.sock == undefined){
-			c.sock = new WebSocket("ws://potatobox.no-ip.info:8989", 'echo-protocol')
+			c.sock = new WebSocket("ws://" + host + ":8989", 'echo-protocol')
 			c.name = get("name").value
 			get("connect").style.visibility = "hidden"
 			get("canvas").style.visibility = "visible"
@@ -55,9 +55,10 @@ var Client = {
 					},
 					gun: function(data) {
 						c.gun = data
+						
 					},
 					bullet: function(data) {
-						c.bullets.push(new Bullet(data[0], data[1], data[2]))
+						c.bullets.push(new Bullet(data[0], data[1], data[2], data[3]))
 					},
 					kills: function(data) {
 						c.getPlayer(data[0]).kills = data[1]
@@ -85,9 +86,9 @@ var Client = {
 		r.clear()
 		r.background()
 		r.border()
+		c.bulletTick()
 		r.players()
 		r.names()
-		c.bulletTick()
 		r.health()
 		r.ammo()
 		r.inventory()
@@ -181,6 +182,7 @@ var Render = {
 				}
 			}
 			else {
+				
 				r.drawImage("player" + c.players[i].dir, r.getOffsetX() - 32 - c.players[i].x, r.getOffsetY() - 32 - c.players[i].y, 64, 64)
 			}
 		}
@@ -256,7 +258,14 @@ var Render = {
 	},
 	bulletRender: function () {
 		for (i in c.bullets) {
-			r.drawImage("bullet", r.getOffsetX() - c.bullets[i].x - 4, r.getOffsetY() - c.bullets[i].y - 4, 8, 8)
+			r.context.strokeStyle = "rgba(127, 127, 127, 1)"
+			r.context.beginPath()
+			r.context.lineWidth = 3
+			r.context.moveTo(r.getOffsetX() - c.bullets[i].x, r.getOffsetY() - c.bullets[i].y)
+			r.context.lineTo(r.getOffsetX() - c.bullets[i].x + (c.bullets[i].velX * (c.bullets[i].age < 5 ? c.bullets[i].age : 5)), r.getOffsetY() - c.bullets[i].y + (c.bullets[i].velY * (c.bullets[i].age < 5 ? c.bullets[i].age : 5)), 50)
+			r.context.stroke()
+			r.context.lineWidth = 1
+			r.context.strokeStyle = "rgba(0, 0, 0, 1)"
 		}
 	},
 	background: function() {
@@ -301,12 +310,17 @@ var Render = {
 	}
 }
 
-var Bullet = function(x, y, a) {
+var Bullet = function(x, y, a, gun) {
+	var sounds = ["pistol", "smg", "rifle"]
 	this.x = x
 	this.y = y
+	this.audio = document.createElement("audio")
+	this.audio.innerHTML = "<source  src='Sounds/" + sounds[gun]  +".wav'>"
+	this.audio.volume = Math.pow(750 / ((Math.pow(Math.pow((c.x - x), 2) + Math.pow((c.y - y), 2), 1/2)) + 750), 2)
 	this.velX = Math.cos(a * Math.PI / 180) * 100
 	this.velY = Math.sin(a * Math.PI / 180) * 100
 	this.age = 0
+	this.audio.play()
 }
 
 Bullet.prototype = {
