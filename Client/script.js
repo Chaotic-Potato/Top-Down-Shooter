@@ -2,11 +2,8 @@ var Client = {
 	tickRate: 100,
 	players: [],
 	bullets: [],
-	x: 0,
-	y: 0,
 	health: 100,
 	mapDim: 800,
-	gun: 0,
 	ammo: 13,
 	keys: {
 		w : false,
@@ -54,8 +51,7 @@ var Client = {
 						c.health = data
 					},
 					gun: function(data) {
-						c.gun = data
-						
+						c.getPlayer(data[0]).gun = data[1]
 					},
 					bullet: function(data) {
 						c.bullets.push(new Bullet(data[0], data[1], data[2], data[3]))
@@ -212,7 +208,7 @@ var Render = {
 	inventory: function() {
 		var weapons = ["pistol", "smg", "rifle"]
 		for (var i = 0; i < 3; i++) {
-			if (i == c.gun) {
+			if (i == c.getPlayer(c.name).gun) {
 				r.context.fillStyle = "rgba(127, 127, 127, 0.5)"
 			}
 			else {
@@ -254,7 +250,7 @@ var Render = {
 		r.context.font = "24px Courier New"
 		r.context.textAlign = "right"
 		r.context.fillStyle = "#000"
-		r.context.strokeText(c.ammo + "/" + ammo[c.gun], window.innerWidth - 10, window.innerHeight - 10)
+		r.context.strokeText(c.ammo + "/" + ammo[c.getPlayer(c.name).gun], window.innerWidth - 10, window.innerHeight - 10)
 	},
 	bulletRender: function () {
 		for (i in c.bullets) {

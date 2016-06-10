@@ -50,6 +50,7 @@ var Server = {
 								con.sendUTF(JSON.stringify({type : "move", data : [s.clients[i].name, s.clients[i].x, s.clients[i].y, s.clients[i].dir]}))
 								con.sendUTF(JSON.stringify({type : "kills", data : [s.clients[i].name, s.clients[i].kills]}))
 								con.sendUTF(JSON.stringify({type : "deaths", data : [s.clients[i].name, s.clients[i].deaths]}))
+								con.sendUTF(JSON.stringify({type : "gun", data : [s.clients[i].name, s.clients[i].gun]}))
 							}
 						}
 						else {
@@ -61,7 +62,7 @@ var Server = {
 					key: function(data, con) {
 						if (v.gun.indexOf(data[0]) != -1 && data[1]) {
 							con.gun = v.gun.indexOf(data[0])
-							con.sendUTF(JSON.stringify({type : "gun", data : v.gun.indexOf(data[0])}))
+							s.send("gun", [con.name, v.gun.indexOf(data[0])])
 							s.changeAmmo(con, 0)
 							s.reload(con)
 						}
@@ -69,7 +70,7 @@ var Server = {
 							s.reload(con)
 						}
 						con.keyPress[data[0]] = data[1]
-						if (data[1] && v.gun.indexOf(data[0]) == -1) {
+						if (data[1] && v.keyToDir[data[0]] != undefined) {
 							con.dir = v.keyToDir[data[0]]
 						}
 					},
