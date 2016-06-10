@@ -2,9 +2,11 @@ var Client = {
 	tickRate: 100,
 	players: [],
 	bullets: [],
+	killMsgs: [],
 	health: 100,
 	mapDim: 800,
 	ammo: 13,
+	audio: document.createElement("audio"),
 	keys: {
 		w : false,
 		s : false,
@@ -64,6 +66,13 @@ var Client = {
 					},
 					ammo: function(data) {
 						c.ammo = data
+					},
+					reload: function (data) {
+						c.audio.innerHTML = "<source  src='Sounds/reload.wav'>"
+						c.audio.play()
+					},
+					killMsg: function(data) {
+						c.killMsgs.push([data[0], data[1], data[2], 0])
 					}
 				}
 				if (typeFunc[m.type] != undefined) {
@@ -92,6 +101,7 @@ var Client = {
 			r.score()
 		}
 		r.map()
+		r.msgs()
 	},
 	getPlayer: function(name) {
 		for (i in c.players) {
@@ -178,8 +188,9 @@ var Render = {
 				}
 			}
 			else {
-				
+				var gun = ["pistol", "smg", "rifle"]
 				r.drawImage("player" + c.players[i].dir, r.getOffsetX() - 32 - c.players[i].x, r.getOffsetY() - 32 - c.players[i].y, 64, 64)
+				r.drawImage(gun[c.players[i].gun], r.getOffsetX() - 16 - c.players[i].x, r.getOffsetY() - 80 - c.players[i].y, 32, 32)
 			}
 		}
 		r.drawImage("player" + c.dir, Math.round(window.innerWidth / 2) - 32, Math.round(window.innerHeight / 2) - 32, 64, 64)
@@ -299,6 +310,23 @@ var Render = {
 			r.context.strokeText(c.players[i].name, window.innerWidth / 2 - (width /2), 195 + (25 * i))
 			r.context.strokeText(c.players[i].kills, window.innerWidth / 2 + (width /2) - 110, 195 + (25 * i))
 			r.context.strokeText(c.players[i].deaths, window.innerWidth / 2 + (width /2) - 50, 195 + (25 * i))
+		}
+	},
+	msgs: function() {
+		for (i in c.killMsgs) {
+			c.killMsgs[i][3]++
+			if (c.killMsgs[i][3] > 500) {
+				c.killMsgs.splice(i, 1)
+			}
+		}
+		for (i in c.killMsgs) {
+			var width = r.context.measureText(c.killMsgs[i][0]).width+ r.context.measureText(c.killMsgs[i][1]).width + 55
+			var gun = ["pistol", "smg", "rifle"]
+			r.context.fillStyle = "rgba(187, 187, 187, 0.5)"
+			r.context.fillRect(window.innerWidth - width - 15, 20 + i * 25, width, 20)
+			r.context.strokeText(c.killMsgs[i][1] + "   " + c.killMsgs[i][0], window.innerWidth - 20 , 38 + (i * 25))
+			r.drawImage(gun[c.killMsgs[i][2]], (window.innerWidth - r.context.measureText(c.killMsgs[i][0]).width - 55), 15 + (i * 25), 32, 32)
+			
 		}
 	},
 	clear: function() {

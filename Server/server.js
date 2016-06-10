@@ -41,6 +41,7 @@ var Server = {
 						if (s.nameValid(data)) {
 							con.name = data
 							s.send("connect", con.name)
+							s.send("gun", [con.name, con.gun])
 							con.sendUTF(JSON.stringify({type : "map", data : s.mapDim}))
 							s.updateCoords(con)
 							for (i in s.clients) {
@@ -85,7 +86,7 @@ var Server = {
 					},
 					shot: function(data, con) {
 						if (con.cooldown + con.reload == 0) {
-							if (con.ammo > 0) {
+							if (con.ammo > 0 && con.health > 0) {
 								s.changeAmmo(con, con.ammo - 1)
 								data = (data + Math.pow(Math.random(), 2) * v.inacc[con.gun] * (Math.random() > 0.5 ? -1 : 1)) + 360 % 360
 								s.send("bullet", [con.x, con.y, data, con.gun])
@@ -168,6 +169,7 @@ var Server = {
 			c.deaths += 1
 			s.send("deaths", [c.name, c.deaths])
 			if (shooter != undefined) {
+				s.send("killMsg", [c.name, shooter.name, shooter.gun])
 				shooter.kills += 1
 				s.send("kills", [shooter.name, shooter.kills])
 			}
@@ -222,6 +224,7 @@ var Server = {
 	reload: function(c) {
 		if (c.reload == 0) {
 			c.reload = v.reload[c.gun]
+			c.sendUTF(JSON.stringify({type : "reload"}))
 		}
 	},
 	angleComp: function(a, b) {return Math.min(((a - b + 360) % 360), ((b - a + 360) % 360));}
