@@ -153,7 +153,7 @@ var Client = {
 		setTimeout(function() {c.send("respawn", "")} , 500)
 	},
 	click: function(evt) {
-		c.send("shot", (Math.atan(((window.innerWidth /2) - evt.offsetX) / (evt.offsetY - (window.innerHeight /2))) * 180 / Math.PI + 450 + (evt.offsetY < (window.innerHeight /2) ? 0 : 180)) % 360)
+		c.send("shot", (Math.atan(((window.innerWidth /2) - (evt.offsetX + 16)) / ((evt.offsetY + 16) - (window.innerHeight /2))) * 180 / Math.PI + 450 + ((evt.offsetY + 16) < (window.innerHeight /2) ? 0 : 180)) % 360)
 	}
 }
 
@@ -267,9 +267,9 @@ var Render = {
 		for (i in c.bullets) {
 			r.context.strokeStyle = "rgba(127, 127, 127, 1)"
 			r.context.beginPath()
-			r.context.lineWidth = 3
+			r.context.lineWidth = 5
 			r.context.moveTo(r.getOffsetX() - c.bullets[i].x, r.getOffsetY() - c.bullets[i].y)
-			r.context.lineTo(r.getOffsetX() - c.bullets[i].x + (c.bullets[i].velX * (c.bullets[i].age < 5 ? c.bullets[i].age : 5)), r.getOffsetY() - c.bullets[i].y + (c.bullets[i].velY * (c.bullets[i].age < 5 ? c.bullets[i].age : 5)), 50)
+			r.context.lineTo(r.getOffsetX() - c.bullets[i].x + (c.bullets[i].velX * (c.bullets[i].age < 10 ? c.bullets[i].age : 10)), r.getOffsetY() - c.bullets[i].y + (c.bullets[i].velY * (c.bullets[i].age < 10 ? c.bullets[i].age : 10)), 50)
 			r.context.stroke()
 			r.context.lineWidth = 1
 			r.context.strokeStyle = "rgba(0, 0, 0, 1)"
