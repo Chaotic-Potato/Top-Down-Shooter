@@ -56,7 +56,7 @@ var Client = {
 						c.getPlayer(data[0]).gun = data[1]
 					},
 					bullet: function(data) {
-						c.bullets.push(new Bullet(data[0], data[1], data[2], data[3]))
+						c.bullets.push(new Bullet(data[0], data[1], data[2]))
 					},
 					kills: function(data) {
 						c.getPlayer(data[0]).kills = data[1]
@@ -153,7 +153,7 @@ var Client = {
 		setTimeout(function() {c.send("respawn", "")} , 500)
 	},
 	click: function(evt) {
-		c.send("shot", (Math.atan(((window.innerWidth /2) - evt.offsetX) / (evt.offsetY - (window.innerHeight /2))) * 180 / Math.PI + 450 + (evt.offsetY < (window.innerHeight /2) ? 0 : 180)) % 360)
+		c.send("shot", (Math.atan(((window.innerWidth /2) - (evt.offsetX + 16)) / ((evt.offsetY + 16) - (window.innerHeight /2))) * 180 / Math.PI + 450 + ((evt.offsetY + 16) < (window.innerHeight /2) ? 0 : 180)) % 360)
 	}
 }
 
@@ -267,9 +267,9 @@ var Render = {
 		for (i in c.bullets) {
 			r.context.strokeStyle = "rgba(127, 127, 127, 1)"
 			r.context.beginPath()
-			r.context.lineWidth = 3
+			r.context.lineWidth = 5
 			r.context.moveTo(r.getOffsetX() - c.bullets[i].x, r.getOffsetY() - c.bullets[i].y)
-			r.context.lineTo(r.getOffsetX() - c.bullets[i].x + (c.bullets[i].velX * (c.bullets[i].age < 5 ? c.bullets[i].age : 5)), r.getOffsetY() - c.bullets[i].y + (c.bullets[i].velY * (c.bullets[i].age < 5 ? c.bullets[i].age : 5)), 50)
+			r.context.lineTo(r.getOffsetX() - c.bullets[i].x + (c.bullets[i].velX * (c.bullets[i].age < 10 ? c.bullets[i].age : 10)), r.getOffsetY() - c.bullets[i].y + (c.bullets[i].velY * (c.bullets[i].age < 10 ? c.bullets[i].age : 10)), 50)
 			r.context.stroke()
 			r.context.lineWidth = 1
 			r.context.strokeStyle = "rgba(0, 0, 0, 1)"
@@ -334,13 +334,16 @@ var Render = {
 	}
 }
 
-var Bullet = function(x, y, a, gun) {
+var Bullet = function(name, a, gun) {
 	var sounds = ["pistol", "smg", "rifle"]
-	this.x = x
-	this.y = y
+	this.x = 0
+	this.y = 0
+	this.relX = 0
+	this.relY = 0
+	this.name = name
 	this.audio = document.createElement("audio")
 	this.audio.innerHTML = "<source  src='Sounds/" + sounds[gun]  +".wav'>"
-	this.audio.volume = Math.pow(750 / ((Math.pow(Math.pow((c.x - x), 2) + Math.pow((c.y - y), 2), 1/2)) + 750), 2)
+	this.audio.volume = Math.pow(750 / ((Math.pow(Math.pow((c.x - c.getPlayer(name).x), 2) + Math.pow((c.y - c.getPlayer(name).y), 2), 1/2)) + 750), 2)
 	this.velX = Math.cos(a * Math.PI / 180) * 100
 	this.velY = Math.sin(a * Math.PI / 180) * 100
 	this.age = 0
@@ -350,8 +353,15 @@ var Bullet = function(x, y, a, gun) {
 Bullet.prototype = {
 	tick: function() {
 		this.age++
-		this.x += this.velX
-		this.y += this.velY
+		this.relX += this.velX
+		this.relY += this.velY
+		if (c.getPlayer(this.name) != false) {
+			this.x = this.relX + c.getPlayer(this.name).x
+			this.y = this.relY + c.getPlayer(this.name).y
+		}
+		else {
+			this.age = 100
+		}
 	}
 }
 

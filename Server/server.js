@@ -89,14 +89,27 @@ var Server = {
 							if (con.ammo > 0 && con.health > 0) {
 								s.changeAmmo(con, con.ammo - 1)
 								data = (data + Math.pow(Math.random(), 2) * v.inacc[con.gun] * (Math.random() > 0.5 ? -1 : 1)) + 360 % 360
-								s.send("bullet", [con.x, con.y, data, con.gun])
+								s.send("bullet", [con.name, data, con.gun])
 								con.cooldown = v.cooldown[con.gun]
-								for (x in s.clients) {
+								var boxesHit = []
+								for (z in s.clients) {
 									for (var n = 0; n < 3; n++) {
-										if (s.hitBoxReg(s.clients[x].x - 8, s.clients[x].y + v.hitBoxes[n][0], s.clients[x].x + 8, s.clients[x].y + v.hitBoxes[n][1], con.x, con.y, data) && con != s.clients[x] && s.clients[x].health > 0) {
-											s.changeHealth(s.clients[x], v.dmg[con.gun] * v.hitBoxes[n][2], con)
+										if (s.hitBoxReg(s.clients[z].x - 8, s.clients[z].y + v.hitBoxes[n][0], s.clients[z].x + 8, s.clients[z].y + v.hitBoxes[n][1], con.x, con.y, data) && con != s.clients[z] && s.clients[z].health > 0) {
+											//s.changeHealth(s.clients[z], v.dmg[con.gun] * v.hitBoxes[n][2], con)
+											boxesHit.push([z, n, Math.pow((Math.pow((con.x - s.clients[z].x), 2)+Math.pow((con.y - (s.clients[z].y + v.hitCenters[n])), 2)), 1/2)])
 										}
 									}
+								}
+								if (boxesHit.length > 0) {
+									var index = 0
+									var min = boxesHit[0][2]
+									for (var z = 1; z < boxesHit.length; z++) {
+										if (boxesHit[z][2] < min) {
+											min = boxesHit[z][2]
+											index = z
+										}
+									}
+									s.changeHealth(s.clients[boxesHit[index][0]], v.dmg[con.gun] * v.hitBoxes[boxesHit[index][1]][2], con)
 								}
 							}
 							if (con.ammo == 0) {
@@ -245,6 +258,7 @@ var Values = {
 		[-14, 8, 1],
 		[-32, -14, 0.6],
 	],
+	hitCenters: [14, -3, -23],
 	dmg: [-25, -40, -60],
 	reload: [50,70,100],
 	ammo: [13, 75, 40],
