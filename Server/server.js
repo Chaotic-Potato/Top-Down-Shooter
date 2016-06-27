@@ -93,7 +93,7 @@ var Server = {
 								con.cooldown = v.cooldown[con.gun]
 								var boxesHit = []
 								for (z in s.clients) {
-									for (var n = 0; n < 3; n++) {
+									for (var n = 0; n < 4; n++) {
 										if (s.hitBoxReg(s.clients[z].x - 8, s.clients[z].y + v.hitBoxes[n][0], s.clients[z].x + 8, s.clients[z].y + v.hitBoxes[n][1], con.x, con.y, data) && con != s.clients[z] && s.clients[z].health > 0) {
 											//s.changeHealth(s.clients[z], v.dmg[con.gun] * v.hitBoxes[n][2], con)
 											boxesHit.push([z, n, Math.pow((Math.pow((con.x - s.clients[z].x), 2)+Math.pow((con.y - (s.clients[z].y + v.hitCenters[n])), 2)), 1/2)])
@@ -172,7 +172,7 @@ var Server = {
 		}
 		s.updateCoords(c)
 	},
-	changeHealth(c, val, shooter) {
+	changeHealth: function(c, val, shooter) {
 		if (c.health + val > 0) {
 			c.health += val
 		}
@@ -255,10 +255,11 @@ var Values = {
 	cooldown: [30,17,20],
 	hitBoxes: [
 		[8, 20, 1.6],
+		[20, 20, 0.6],
 		[-14, 8, 1],
 		[-32, -14, 0.6],
 	],
-	hitCenters: [14, -3, -23],
+	hitCenters: [14, 20, -3, -23],
 	dmg: [-25, -40, -60],
 	reload: [50,70,100],
 	ammo: [13, 75, 40],
