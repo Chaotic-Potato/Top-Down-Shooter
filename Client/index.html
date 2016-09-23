@@ -21,8 +21,11 @@
 			<button onclick="c.connect('potatobox.no-ip.info')">Connect</button>
 			<button onclick="c.connect('127.0.0.1')">Connect Local</button>
 		</div>
-		<canvas id="canvas" style="visibility:hidden;position:absolute" onclick="c.click(event)"></canvas>
+		<canvas id="canvas" style="visibility:hidden;position:absolute" onmousedown="c.click(event, true)" onmouseup="c.click(event, false)"></canvas>
 		<canvas id="map" style="visibility:hidden;position:absolute"></canvas>
 		<script src="script.js"></script>
+		<script src="client.js"></script>
+		<script src="render.js"></script>
+		<script src="bullet.js"></script>
 	</body>
 </html>
