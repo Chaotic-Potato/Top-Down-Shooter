@@ -120,6 +120,7 @@ var Server = {
 				}
 				if (typeFunc[m.type] != undefined) {
 					typeFunc[m.type](m.data, con)
+					console.log('GOT: {client:"' + con.name + '", ' +  'data:"' + m.data + '"}')
 				}
 			})
 			con.on('close', function(r, desc) {
@@ -201,6 +202,7 @@ var Server = {
 		for (x in s.clients){
 			s.clients[x].sendUTF(JSON.stringify({type : t, data : m}))
 		}
+		console.log('SEND: {type:"' + t + '", ' +  'data:"' + m + '"}')
 	},
 	nameValid: function(name) {
 		for (i in s.clients) {
