@@ -95,7 +95,7 @@ var Client = {
 		}
 	},
 	tick: function() {
-		//r.clear()
+		r.clear()
 		r.background()
 		r.border()
 		c.bulletTick()
