@@ -70,6 +70,9 @@ var Server = {
 						else if (data[0] == "r") {
 							s.reload(con)
 						}
+						else {
+							s.updateCoords(con, con.x, con.y)	
+						}
 						con.keyPress[data[0]] = data[1]
 						if (data[1] && v.keyToDir[data[0]] != undefined) {
 							con.dir = v.keyToDir[data[0]]
@@ -164,14 +167,14 @@ var Server = {
 		if (Math.abs(c.x) > s.mapDim) {
 			c.x = s.mapDim * (c.x > 0 ? 1 : -1)
 		}
-		s.updateCoords(c)
+		s.updateVel(c, a, 0)
 	},
 	addY: function(a, c) {
 		c.y += a
 		if (Math.abs(c.y) > s.mapDim) {
 			c.y = s.mapDim * (c.y > 0 ? 1 : -1)
 		}
-		s.updateCoords(c)
+		s.updateVel(c, 0, a)
 	},
 	changeHealth: function(c, val, shooter) {
 		if (c.health + val > 0) {
@@ -195,8 +198,11 @@ var Server = {
 		c.ammo = a
 		c.sendUTF(JSON.stringify({type : "ammo", data : c.ammo}))
 	},
-	updateCoords: function(c) {
-		s.send("move", [c.name, c.x, c.y, c.dir])
+	updateCoords: function(c, x, y) {
+		s.send("moveUpdate", [c.name, x, y])
+	},
+	updateVel: function(c, dx, dy) {
+		s.send("move", [c.name, dx, dy, c.dir])
 	},
 	send: function(t, m) {
 		for (x in s.clients){
