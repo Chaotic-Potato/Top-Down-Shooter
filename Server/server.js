@@ -85,8 +85,13 @@ var Server = {
 					respawn: function(data, con) {
 						if (con.health == 0) {
 							s.changeHealth(con, 100)
+							for (i in con.keyPress) {
+								con.keyPress[i] = false
+							}
 							con.x = Math.round((Math.random() * (s.mapDim * 2)) - s.mapDim)
 							con.y = Math.round((Math.random() * (s.mapDim * 2)) - s.mapDim)
+							con.dx = 0
+							con.dy = 0
 							con.dir = "Down"
 							s.send("moveUpdate",[con.name, con.x, con.y])
 							s.send("move", [con.name, con.dx, con.dy, "Down"])
