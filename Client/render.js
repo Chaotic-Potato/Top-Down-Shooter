@@ -17,6 +17,7 @@ var Render = {
 			r.score()
 		}
 		r.map()
+		r.points()
 		r.msgs()
 		window.requestAnimationFrame(r.tick)
 	},
@@ -187,10 +188,28 @@ var Render = {
 			var gun = ["pistol", "smg", "rifle"]
 			r.context.fillStyle = "rgba(187, 187, 187, 0.5)"
 			r.context.fillRect(window.innerWidth - width - 15, 20 + i * 25, width, 20)
+			r.context.textAlign = "right"
 			r.context.strokeText(c.killMsgs[i][1] + "   " + c.killMsgs[i][0], window.innerWidth - 20 , 38 + (i * 25))
 			r.drawImage(gun[c.killMsgs[i][2]], (window.innerWidth - r.context.measureText(c.killMsgs[i][0]).width - 55), 15 + (i * 25), 32, 32)
 			
 		}
+	},
+	points: function() {
+		r.context.strokeStyle = (c.points >= 0 ? "#00F" : "#F00")
+		r.context.textAlign = "left"
+		r.context.strokeText(Math.abs(c.points) + " / 100", 20, 250)
+		r.context.strokeStyle = "#000"
+		r.context.beginPath()
+		r.context.moveTo(19, 259)
+		r.context.lineTo(121, 259)
+		r.context.lineTo(121, 286)
+		r.context.lineTo(19, 286)
+		r.context.lineTo(19, 259)
+		r.context.stroke()
+		r.context.fillStyle = "#aaa"
+		r.context.fillRect(20, 260, 100, 25)
+		r.context.fillStyle = (c.points >= 0 ? "#00F" : "#F00")
+		r.context.fillRect(20, 260,Math.min(100, Math.abs(c.points)), 25)
 	},
 	clear: function() {
 		r.context.clearRect(0, 0, r.canvas.width, r.canvas.height)

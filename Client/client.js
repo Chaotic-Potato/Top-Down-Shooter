@@ -1,5 +1,6 @@
 var Client = {
 	tickRate: 100,
+	dir: "Down",
 	players: [],
 	bullets: [],
 	killMsgs: [],
@@ -8,6 +9,7 @@ var Client = {
 	ammo: 13,
 	lastUpdate: new Date().getTime(),
 	audio: document.createElement("audio"),
+	points: 0,
 	keys: {
 		w : false,
 		s : false,
@@ -76,6 +78,9 @@ var Client = {
 					},
 					deaths: function(data) {
 						c.getPlayer(data[0]).deaths = data[1]
+					},
+					points: function(data) {
+						c.points = data * (c.getPlayer(c.name).team ? 1 : -1)
 					},
 					ammo: function(data) {
 						c.ammo = data

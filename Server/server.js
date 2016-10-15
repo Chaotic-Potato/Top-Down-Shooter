@@ -4,6 +4,7 @@ var Server = {
 	mapDim: 800,
 	lastSecond: new Date().getTime(),
 	ticks: 0,
+	points: 0,
 	init: function() {
 		s.loop = setInterval(s.tick, (1000 / s.tickRate) - 0.1)
 		s.WebSocketServer = require('websocket').server
@@ -48,6 +49,7 @@ var Server = {
 							s.send("connect", [con.name, con.team])
 							s.send("gun", [con.name, con.gun])
 							con.sendUTF(JSON.stringify({type : "map", data : s.mapDim}))
+							con.sendUTF(JSON.stringify({type : "points", data : s.points}))
 							for (i in s.clients) {
 								if (s.clients[i] != con) {
 									con.sendUTF(JSON.stringify({type : "connect", data : [s.clients[i].name, s.clients[i].team]}))
@@ -200,6 +202,8 @@ var Server = {
 				s.send("killMsg", [c.name, shooter.name, shooter.gun])
 				shooter.kills += 1
 				s.send("kills", [shooter.name, shooter.kills])
+				s.points += v.points[shooter.gun] * (shooter.team ? 1 : -1)
+				s.send("points", s.points)
 			}
 			s.send("moveUpdate", [c.name, c.x, c.y])
 			s.send("move", [c.name, 0, 0, c.dir])
@@ -294,6 +298,7 @@ var Values = {
 	dmg: [-25, -40, -60],
 	reload: [50,70,100],
 	ammo: [13, 75, 40],
+	points: [8, 5, 3]
 }
 
 function decode(string) {
