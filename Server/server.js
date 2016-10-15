@@ -2,8 +2,10 @@ var Server = {
 	clients: [],
 	tickRate: 100,
 	mapDim: 800,
+	lastSecond: new Date().getTime(),
+	ticks: 0,
 	init: function() {
-		s.loop = setInterval(s.tick, (1000 / s.tickRate))
+		s.loop = setInterval(s.tick, (1000 / s.tickRate) - 0.1)
 		s.WebSocketServer = require('websocket').server
 		s.http =  require("http") 
 		s.server = s.http.createServer(function(res, req){}).listen(8989)
@@ -16,6 +18,8 @@ var Server = {
 			s.clients.push(con)
 			con.x = 0
 			con.y = 0
+			con.dx = 0
+			con.dy = 0
 			con.health = 100
 			con.gun = 0
 			con.kills = 0
@@ -43,12 +47,12 @@ var Server = {
 							s.send("connect", con.name)
 							s.send("gun", [con.name, con.gun])
 							con.sendUTF(JSON.stringify({type : "map", data : s.mapDim}))
-							s.updateCoords(con)
 							for (i in s.clients) {
 								if (s.clients[i] != con) {
 									con.sendUTF(JSON.stringify({type : "connect", data : s.clients[i].name}))
 								}
-								con.sendUTF(JSON.stringify({type : "move", data : [s.clients[i].name, s.clients[i].x, s.clients[i].y, s.clients[i].dir]}))
+								con.sendUTF(JSON.stringify({type : "moveUpdate", data : [s.clients[i].name, s.clients[i].x, s.clients[i].y]}))
+								con.sendUTF(JSON.stringify({type : "move", data : [s.clients[i].name, s.clients[i].dx, s.clients[i].dy, s.clients[i].dir]}))
 								con.sendUTF(JSON.stringify({type : "kills", data : [s.clients[i].name, s.clients[i].kills]}))
 								con.sendUTF(JSON.stringify({type : "deaths", data : [s.clients[i].name, s.clients[i].deaths]}))
 								con.sendUTF(JSON.stringify({type : "gun", data : [s.clients[i].name, s.clients[i].gun]}))
@@ -84,7 +88,8 @@ var Server = {
 							con.x = Math.round((Math.random() * (s.mapDim * 2)) - s.mapDim)
 							con.y = Math.round((Math.random() * (s.mapDim * 2)) - s.mapDim)
 							con.dir = "Down"
-							s.send("move",[con.name, con.x, con.y, con.dir])
+							s.send("moveUpdate",[con.name, con.x, con.y])
+							s.send("move", [con.name, con.dx, con.dy, "Down"])
 						}
 					},
 					shot: function(data, con) {
@@ -98,7 +103,6 @@ var Server = {
 								for (z in s.clients) {
 									for (var n = 0; n < 4; n++) {
 										if (s.hitBoxReg(s.clients[z].x - 8, s.clients[z].y + v.hitBoxes[n][0], s.clients[z].x + 8, s.clients[z].y + v.hitBoxes[n][1], con.x, con.y, data) && con != s.clients[z] && s.clients[z].health > 0) {
-											//s.changeHealth(s.clients[z], v.dmg[con.gun] * v.hitBoxes[n][2], con)
 											boxesHit.push([z, n, Math.pow((Math.pow((con.x - s.clients[z].x), 2)+Math.pow((con.y - (s.clients[z].y + v.hitCenters[n])), 2)), 1/2)])
 										}
 									}
@@ -138,20 +142,21 @@ var Server = {
 		})
 	},
 	tick: function() {
+		if (new Date().getTime() - s.lastSecond >= 1000) { 
+			s.lastSecond += 1000
+			console.log("Tick Rate: " + s.ticks) 
+			s.ticks = 0
+		}
+		s.ticks++
 		for (i in s.clients) {
 			if (s.clients[i].health > 0) {
-				if (s.clients[i].keyPress.a && !s.clients[i].keyPress.d) {
-					s.addX(3, s.clients[i])
+				var dx = s.addX((s.clients[i].keyPress.a ? 3 : 0) - (s.clients[i].keyPress.d ? 3 : 0), s.clients[i])
+				var dy = s.addY((s.clients[i].keyPress.w ? 3 : 0) - (s.clients[i].keyPress.s ? 3 : 0), s.clients[i])
+				if (dx != s.clients[i].dx || dy != s.clients[i].dy) {
+					s.updateVel(s.clients[i], dx, dy)
 				}
-				if (!s.clients[i].keyPress.a && s.clients[i].keyPress.d) {
-					s.addX(-3, s.clients[i])
-				}
-				if (s.clients[i].keyPress.w && !s.clients[i].keyPress.s) {
-					s.addY(3, s.clients[i])
-				}
-				if (!s.clients[i].keyPress.w && s.clients[i].keyPress.s) {
-					s.addY(-3, s.clients[i])
-				}
+				s.clients[i].dx = dx
+				s.clients[i].dy = dy
 			}
 			s.clients[i].cooldown -= (s.clients[i].cooldown > 0 ? 1 : 0)
 			if (s.clients[i].reload > 0) {
@@ -167,14 +172,14 @@ var Server = {
 		if (Math.abs(c.x) > s.mapDim) {
 			c.x = s.mapDim * (c.x > 0 ? 1 : -1)
 		}
-		s.updateVel(c, a, 0)
+		return a
 	},
 	addY: function(a, c) {
 		c.y += a
 		if (Math.abs(c.y) > s.mapDim) {
 			c.y = s.mapDim * (c.y > 0 ? 1 : -1)
 		}
-		s.updateVel(c, 0, a)
+		return a
 	},
 	changeHealth: function(c, val, shooter) {
 		if (c.health + val > 0) {
@@ -190,7 +195,8 @@ var Server = {
 				shooter.kills += 1
 				s.send("kills", [shooter.name, shooter.kills])
 			}
-			s.send("move", [c.name, c.x, c.y, c.dir])
+			s.send("moveUpdate", [c.name, c.x, c.y])
+			s.send("move", [c.name, 0, 0, c.dir])
 		}
 		c.sendUTF(JSON.stringify({type : "health", data : c.health}))
 	},
