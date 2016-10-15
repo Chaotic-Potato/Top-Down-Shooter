@@ -6,6 +6,7 @@ var Client = {
 	health: 100,
 	mapDim: 800,
 	ammo: 13,
+	lastUpdate: new Date().getTime(),
 	audio: document.createElement("audio"),
 	keys: {
 		w : false,
@@ -19,6 +20,7 @@ var Client = {
 	},
 	connect: function(host) {
 		c.loop = setInterval(c.tick, (1000 / c.tickRate))
+		r.tick()
 		if (c.sock == undefined){
 			c.sock = new WebSocket("ws://" + host + ":8989", 'echo-protocol')
 			c.name = get("name").value
@@ -44,7 +46,7 @@ var Client = {
 					},
 
 					connect: function(data) {
-						c.players.push({"name" : data})
+						c.players.push({name: data, x: 0, y: 0, dx: 0, dy: 0, dir: "Down"})
 					},
 					disconnect: function(data) {
 						for (i in c.players) {
@@ -58,6 +60,10 @@ var Client = {
 					},
 					health: function(data) {
 						c.health = data
+						if (data == 0) {
+							alert("You Died!")
+							c.respawn()
+						}
 					},
 					gun: function(data) {
 						c.getPlayer(data[0]).gun = data[1]
@@ -95,21 +101,8 @@ var Client = {
 		}
 	},
 	tick: function() {
-		r.clear()
-		r.background()
-		r.border()
 		c.bulletTick()
 		c.updatePlayerPos()
-		r.players()
-		r.names()
-		r.health()
-		r.ammo()
-		r.inventory()
-		if (r.showScore) {
-			r.score()
-		}
-		r.map()
-		r.msgs()
 	},
 	getPlayer: function(name) {
 		for (i in c.players) {
@@ -120,10 +113,14 @@ var Client = {
 		return false
 	},
 	updatePlayerPos: function() {
+		var diff = new Date().getTime() - c.lastUpdate
 		for (i in c.players) {
-			c.players[i].x += c.players[i].dx 
-			c.players[i].y += c.players[i].dy 
+			c.players[i].x += c.players[i].dx * diff * c.tickRate / 1000
+			c.players[i].y += c.players[i].dy * diff * c.tickRate / 1000
+			c.players[i].x = Math.max(Math.min(c.players[i].x, c.mapDim), c.mapDim * -1)
+			c.players[i].y = Math.max(Math.min(c.players[i].y, c.mapDim), c.mapDim * -1)
 		}
+		c.lastUpdate = new Date().getTime()
 	},
 	bulletTick: function() {
 		for (i in c.bullets) {
@@ -134,7 +131,6 @@ var Client = {
 				c.bullets.splice(i, 1)
 			}
 		}
-		r.bulletRender()
 	},
 	keyDown: function(evt) {
 		var key = String.fromCharCode(evt.keyCode).toLowerCase()
@@ -164,7 +160,8 @@ var Client = {
 		c.sock.send(JSON.stringify({type : t, data : m}))
 	},
 	respawn: function() {
-		setTimeout(function() {c.send("respawn", "")} , 500)
+		c.send("respawn", "")
+		c.bullets = []
 	},
 	click: function(evt, down) {
 		if (down) {

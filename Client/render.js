@@ -3,6 +3,23 @@ var Render = {
 	context: document.getElementById("canvas").getContext("2d"),
 	map: document.getElementById("map"),
 	mapContext: document.getElementById("map").getContext("2d"),
+	tick: function() {
+		r.clear()
+		r.background()
+		r.border()
+		r.bullets()
+		r.players()
+		r.names()
+		r.health()
+		r.ammo()
+		r.inventory()
+		if (r.showScore) {
+			r.score()
+		}
+		r.map()
+		r.msgs()
+		window.requestAnimationFrame(r.tick)
+	},
 	resize: function() {
 		get("canvas").width = window.innerWidth
 		get("canvas").height = window.innerHeight
@@ -104,13 +121,13 @@ var Render = {
 		r.context.fillStyle = "#000"
 		r.context.strokeText(c.ammo + "/" + ammo[c.getPlayer(c.name).gun], window.innerWidth - 10, window.innerHeight - 10)
 	},
-	bulletRender: function () {
+	bullets: function () {
 		for (i in c.bullets) {
 			r.context.strokeStyle = "rgba(127, 127, 127, 1)"
 			r.context.beginPath()
 			r.context.lineWidth = 5
 			r.context.moveTo(r.getOffsetX() - c.bullets[i].x, r.getOffsetY() - c.bullets[i].y)
-			r.context.lineTo(r.getOffsetX() - c.bullets[i].x + (c.bullets[i].velX * (c.bullets[i].age < 10 ? c.bullets[i].age : 10)), r.getOffsetY() - c.bullets[i].y + (c.bullets[i].velY * (c.bullets[i].age < 10 ? c.bullets[i].age : 10)), 50)
+			r.context.lineTo(r.getOffsetX() - c.bullets[i].x + (c.bullets[i].velX * (c.bullets[i].age < 3 ? c.bullets[i].age : 3)), r.getOffsetY() - c.bullets[i].y + (c.bullets[i].velY * (c.bullets[i].age < 3 ? c.bullets[i].age : 3)), 50)
 			r.context.stroke()
 			r.context.lineWidth = 1
 			r.context.strokeStyle = "rgba(0, 0, 0, 1)"
@@ -126,7 +143,12 @@ var Render = {
 		return Math.round(window.innerHeight / 2) + c.y 
 	},
 	drawImage: function(id, x, y, w, h) {
-		r.context.drawImage(get(id), x, y, w, h)
+		if (get(id) != undefined && get(id).tagName == "IMG") {
+			r.context.drawImage(get(id), x, y, w, h)
+		}
+		else {
+			console.error("Tried to draw with non-image object: " + id)
+		}
 	},
 	score: function() {
 		r.context.textAlign = "left"
