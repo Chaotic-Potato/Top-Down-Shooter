@@ -43,13 +43,14 @@ var Server = {
 				typeFunc = {
 					init: function(data, con) {
 						if (s.nameValid(data)) {
+							con.team = !s.getMajorityTeam()
 							con.name = data
-							s.send("connect", con.name)
+							s.send("connect", [con.name, con.team])
 							s.send("gun", [con.name, con.gun])
 							con.sendUTF(JSON.stringify({type : "map", data : s.mapDim}))
 							for (i in s.clients) {
 								if (s.clients[i] != con) {
-									con.sendUTF(JSON.stringify({type : "connect", data : s.clients[i].name}))
+									con.sendUTF(JSON.stringify({type : "connect", data : [s.clients[i].name, s.clients[i].team]}))
 								}
 								con.sendUTF(JSON.stringify({type : "moveUpdate", data : [s.clients[i].name, s.clients[i].x, s.clients[i].y]}))
 								con.sendUTF(JSON.stringify({type : "move", data : [s.clients[i].name, s.clients[i].dx, s.clients[i].dy, s.clients[i].dir]}))
@@ -107,7 +108,7 @@ var Server = {
 								var boxesHit = []
 								for (z in s.clients) {
 									for (var n = 0; n < 4; n++) {
-										if (s.hitBoxReg(s.clients[z].x - 8, s.clients[z].y + v.hitBoxes[n][0], s.clients[z].x + 8, s.clients[z].y + v.hitBoxes[n][1], con.x, con.y, data) && con != s.clients[z] && s.clients[z].health > 0) {
+										if (s.hitBoxReg(s.clients[z].x - 8, s.clients[z].y + v.hitBoxes[n][0], s.clients[z].x + 8, s.clients[z].y + v.hitBoxes[n][1], con.x, con.y, data) && con != s.clients[z] && s.clients[z].health > 0 && s.clients[z].team != con.team) {
 											boxesHit.push([z, n, Math.pow((Math.pow((con.x - s.clients[z].x), 2)+Math.pow((con.y - (s.clients[z].y + v.hitCenters[n])), 2)), 1/2)])
 										}
 									}
@@ -228,6 +229,17 @@ var Server = {
 			}
 		}
 		return true
+	},
+	getMajorityTeam: function() {
+		var trueTeam = 0
+		var falseTeam = 0
+		for (i in s.clients) {
+			if (s.clients[i].team != undefined) {
+				trueTeam += (s.clients[i].team ? 0 : 1)
+				falseTeam += (s.clients[i].team ? 1 : 0)
+			}
+		}
+		return (trueTeam == falseTeam ? Math.random() < 0.5 : trueTeam < falseTeam)
 	},
 	hitBoxReg: function(rx, ry, cx, cy, px, py, a) {
 		var pairs = [

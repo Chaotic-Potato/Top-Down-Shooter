@@ -47,11 +47,11 @@ var Render = {
 			}
 			else {
 				var gun = ["pistol", "smg", "rifle"]
-				r.drawImage("player" + c.players[i].dir, r.getOffsetX() - 32 - c.players[i].x, r.getOffsetY() - 32 - c.players[i].y, 64, 64)
+				r.drawImage(("player" + c.players[i].dir + (c.players[i].team == c.getPlayer(c.name).team ? "Blue" : "Red")), r.getOffsetX() - 32 - c.players[i].x, r.getOffsetY() - 32 - c.players[i].y, 64, 64)
 				r.drawImage(gun[c.players[i].gun], r.getOffsetX() - 16 - c.players[i].x, r.getOffsetY() - 80 - c.players[i].y, 32, 32)
 			}
 		}
-		r.drawImage("player" + c.dir, Math.round(window.innerWidth / 2) - 32, Math.round(window.innerHeight / 2) - 32, 64, 64)
+		r.drawImage("player" + c.dir + "Blue", Math.round(window.innerWidth / 2) - 32, Math.round(window.innerHeight / 2) - 32, 64, 64)
 	},
 	map: function() {
 		r.context.fillStyle = "#AAA"
