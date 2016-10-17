@@ -1,5 +1,6 @@
 var Client = {
 	tickRate: 100,
+	dir: "Down",
 	players: [],
 	bullets: [],
 	killMsgs: [],
@@ -8,6 +9,7 @@ var Client = {
 	ammo: 13,
 	lastUpdate: new Date().getTime(),
 	audio: document.createElement("audio"),
+	points: 0,
 	keys: {
 		w : false,
 		s : false,
@@ -46,7 +48,7 @@ var Client = {
 					},
 
 					connect: function(data) {
-						c.players.push({name: data, x: 0, y: 0, dx: 0, dy: 0, dir: "Down"})
+						c.players.push({name: data[0], team: data[1], x: 0, y: 0, dx: 0, dy: 0, dir: "Down"})
 					},
 					disconnect: function(data) {
 						for (i in c.players) {
@@ -77,6 +79,9 @@ var Client = {
 					deaths: function(data) {
 						c.getPlayer(data[0]).deaths = data[1]
 					},
+					points: function(data) {
+						c.points = data * (c.getPlayer(c.name).team ? 1 : -1)
+					},
 					ammo: function(data) {
 						c.ammo = data
 					},
@@ -105,9 +110,9 @@ var Client = {
 		c.updatePlayerPos()
 	},
 	getPlayer: function(name) {
-		for (i in c.players) {
-			if (c.players[i].name == name) {
-				return c.players[i]
+		for (z in c.players) {
+			if (c.players[z].name == name) {
+				return c.players[z]
 			}
 		}
 		return false

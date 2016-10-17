@@ -4,6 +4,7 @@ var Server = {
 	mapDim: 800,
 	lastSecond: new Date().getTime(),
 	ticks: 0,
+	points: 0,
 	init: function() {
 		s.loop = setInterval(s.tick, (1000 / s.tickRate) - 0.1)
 		s.WebSocketServer = require('websocket').server
@@ -43,13 +44,15 @@ var Server = {
 				typeFunc = {
 					init: function(data, con) {
 						if (s.nameValid(data)) {
+							con.team = !s.getMajorityTeam()
 							con.name = data
-							s.send("connect", con.name)
+							s.send("connect", [con.name, con.team])
 							s.send("gun", [con.name, con.gun])
 							con.sendUTF(JSON.stringify({type : "map", data : s.mapDim}))
+							con.sendUTF(JSON.stringify({type : "points", data : s.points}))
 							for (i in s.clients) {
 								if (s.clients[i] != con) {
-									con.sendUTF(JSON.stringify({type : "connect", data : s.clients[i].name}))
+									con.sendUTF(JSON.stringify({type : "connect", data : [s.clients[i].name, s.clients[i].team]}))
 								}
 								con.sendUTF(JSON.stringify({type : "moveUpdate", data : [s.clients[i].name, s.clients[i].x, s.clients[i].y]}))
 								con.sendUTF(JSON.stringify({type : "move", data : [s.clients[i].name, s.clients[i].dx, s.clients[i].dy, s.clients[i].dir]}))
@@ -85,8 +88,13 @@ var Server = {
 					respawn: function(data, con) {
 						if (con.health == 0) {
 							s.changeHealth(con, 100)
+							for (i in con.keyPress) {
+								con.keyPress[i] = false
+							}
 							con.x = Math.round((Math.random() * (s.mapDim * 2)) - s.mapDim)
 							con.y = Math.round((Math.random() * (s.mapDim * 2)) - s.mapDim)
+							con.dx = 0
+							con.dy = 0
 							con.dir = "Down"
 							s.send("moveUpdate",[con.name, con.x, con.y])
 							s.send("move", [con.name, con.dx, con.dy, "Down"])
@@ -102,7 +110,7 @@ var Server = {
 								var boxesHit = []
 								for (z in s.clients) {
 									for (var n = 0; n < 4; n++) {
-										if (s.hitBoxReg(s.clients[z].x - 8, s.clients[z].y + v.hitBoxes[n][0], s.clients[z].x + 8, s.clients[z].y + v.hitBoxes[n][1], con.x, con.y, data) && con != s.clients[z] && s.clients[z].health > 0) {
+										if (s.hitBoxReg(s.clients[z].x - 8, s.clients[z].y + v.hitBoxes[n][0], s.clients[z].x + 8, s.clients[z].y + v.hitBoxes[n][1], con.x, con.y, data) && con != s.clients[z] && s.clients[z].health > 0 && s.clients[z].team != con.team) {
 											boxesHit.push([z, n, Math.pow((Math.pow((con.x - s.clients[z].x), 2)+Math.pow((con.y - (s.clients[z].y + v.hitCenters[n])), 2)), 1/2)])
 										}
 									}
@@ -194,6 +202,8 @@ var Server = {
 				s.send("killMsg", [c.name, shooter.name, shooter.gun])
 				shooter.kills += 1
 				s.send("kills", [shooter.name, shooter.kills])
+				s.points += v.points[shooter.gun] * (shooter.team ? 1 : -1)
+				s.send("points", s.points)
 			}
 			s.send("moveUpdate", [c.name, c.x, c.y])
 			s.send("move", [c.name, 0, 0, c.dir])
@@ -223,6 +233,17 @@ var Server = {
 			}
 		}
 		return true
+	},
+	getMajorityTeam: function() {
+		var trueTeam = 0
+		var falseTeam = 0
+		for (i in s.clients) {
+			if (s.clients[i].team != undefined) {
+				trueTeam += (s.clients[i].team ? 0 : 1)
+				falseTeam += (s.clients[i].team ? 1 : 0)
+			}
+		}
+		return (trueTeam == falseTeam ? Math.random() < 0.5 : trueTeam < falseTeam)
 	},
 	hitBoxReg: function(rx, ry, cx, cy, px, py, a) {
 		var pairs = [
@@ -277,6 +298,7 @@ var Values = {
 	dmg: [-25, -40, -60],
 	reload: [50,70,100],
 	ammo: [13, 75, 40],
+	points: [8, 5, 3]
 }
 
 function decode(string) {
