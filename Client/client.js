@@ -170,7 +170,7 @@ var Client = {
 	},
 	click: function(evt, down) {
 		if (down) {
-			c.send("shot", (Math.atan(((window.innerWidth /2) - (evt.offsetX + 16)) / ((evt.offsetY + 16) - (window.innerHeight /2))) * 180 / Math.PI + 450 + ((evt.offsetY + 16) < (window.innerHeight /2) ? 0 : 180)) % 360)
+			c.send("shot", (Math.atan(((window.innerWidth /2) - (evt.offsetX + 16)) / ((evt.offsetY + 16) - (window.innerHeight /2))) + (5 * Math.PI / 2) + ((evt.offsetY + 16) < (window.innerHeight / 2) ? 0 : Math.PI)) % (Math.PI * 2))
 		}
 
 	}

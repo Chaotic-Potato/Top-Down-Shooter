@@ -101,17 +101,19 @@ var Server = {
 						}
 					},
 					shot: function(data, con) {
+						console.log("Angle: " + data)
 						if (con.cooldown + con.reload == 0) {
 							if (con.ammo > 0 && con.health > 0) {
 								s.changeAmmo(con, con.ammo - 1)
-								data = (data + Math.pow(Math.random(), 2) * v.inacc[con.gun] * (Math.random() > 0.5 ? -1 : 1)) + 360 % 360
+								data = (data + Math.pow(Math.random(), 2) * v.inacc[con.gun] * (Math.random() > 0.5 ? -1 : 1)) + Math.PI * 2 % (Math.PI * 2)
 								s.send("bullet", [con.name, data, con.gun])
 								con.cooldown = v.cooldown[con.gun]
 								var boxesHit = []
 								for (z in s.clients) {
 									for (var n = 0; n < 4; n++) {
-										if (s.hitBoxReg(s.clients[z].x - 8, s.clients[z].y + v.hitBoxes[n][0], s.clients[z].x + 8, s.clients[z].y + v.hitBoxes[n][1], con.x, con.y, data) && con != s.clients[z] && s.clients[z].health > 0 && s.clients[z].team != con.team) {
-											boxesHit.push([z, n, Math.pow((Math.pow((con.x - s.clients[z].x), 2)+Math.pow((con.y - (s.clients[z].y + v.hitCenters[n])), 2)), 1/2)])
+										var hit = s.hitBoxReg(s.clients[z].x - 8, s.clients[z].y + v.hitBoxes[n][0], s.clients[z].x + 8, s.clients[z].y + v.hitBoxes[n][1], con.x, con.y, data) 
+										if (hit != null && con != s.clients[z] && s.clients[z].health > 0 && s.clients[z].team != con.team) {
+											boxesHit.push([z, n, hit])
 										}
 									}
 								}
@@ -246,28 +248,28 @@ var Server = {
 		return (trueTeam == falseTeam ? Math.random() < 0.5 : trueTeam < falseTeam)
 	},
 	hitBoxReg: function(rx, ry, cx, cy, px, py, a) {
-		var pairs = [
-			[[rx,ry],[rx,cy]],
-			[[rx,ry],[cx,ry]],
-			[[rx,ry],[cx,cy]],
-			[[rx,cy],[cx,ry]],
-			[[rx,cy],[cx,cy]],
-			[[cx,ry],[cx,cy]]
-		]
-		var max = 0
-		var endPair
-		for (i in pairs) {
-			pairs[i] = [s.calcAngle(px, py, pairs[i][0][0], pairs[i][0][1]), s.calcAngle(px, py, pairs[i][1][0], pairs[i][1][1])]
-			if (s.angleComp(pairs[i][0], pairs[i][1]) > max) {
-				max = s.angleComp(pairs[i][0], pairs[i][1])
-				endPair = pairs[i]
+		if (rx <= px && py <= cx && ry <= py && py <= cx) {
+			return 0
+		}
+		if ((((px - rx) * Math.cos(a)) >= 0 || ((px - cx) * Math.cos(a)) >= 0) && (((py - ry) * Math.sin(a)) >= 0 || ((py - cy) * Math.sin(a)) >= 0)) {
+			return null
+		}
+		var out = null
+		var p = [px, py]
+		var r = [rx, ry]
+		var c = [cx, cy]
+		for (var i = 0; i < 4; i++) { //0: rx, 1: cx, 2: ry, 3: cy
+			var h = Math.floor(i / 2)
+			var e = i % 2 == 0
+			var t = (i < 2 ? function(n){return 1/Math.tan(n)} : Math.tan)
+			var s = (i < 2 ? Math.sin : Math.cos)
+			var d = ((e ? r : c)[1 - h] - p[1 - h])
+			if (p[h] + d * t(a) >= r[h] && p[h] + d * t(a) <= c[h]) {
+				var dist = d / s(a)
+				out = (out == null ? dist : Math.min(out, dist))
 			}
 		}
-		return (s.angleComp(a, endPair[0]) + s.angleComp(a, endPair[1]) == max) || (rx < px && cx > px  &&  ry < py && cy > py)
-	},
-	calcAngle: function(xa, ya, xb, yb) {
-		var ang = (xa == xb ? 90 : Math.acos((xb - xa) / Math.sqrt(Math.pow((xa - xb), 2) + Math.pow((ya - yb), 2))) * 180 / Math.PI)
-		return (ya > yb ? -1 * ang + 360 : ang)
+		return out
 	},
 	reload: function(c) {
 		if (c.reload == 0) {
@@ -275,7 +277,6 @@ var Server = {
 			c.sendUTF(JSON.stringify({type : "reload"}))
 		}
 	},
-	angleComp: function(a, b) {return Math.min(((a - b + 360) % 360), ((b - a + 360) % 360));}
 }
 
 var Values = {
@@ -286,7 +287,7 @@ var Values = {
 		a : "Left",
 		d : "Right"
 	},
-	inacc: [5, 2, 1],
+	inacc: [0.09, 0.35, 0.18],
 	cooldown: [30,17,20],
 	hitBoxes: [
 		[8, 20, 1.6],
