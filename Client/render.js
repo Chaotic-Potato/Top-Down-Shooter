@@ -63,8 +63,11 @@ var Render = {
 		r.context.lineTo(19, 222)
 		r.context.lineTo(19, 19)
 		r.context.stroke()
-		r.context.fillStyle = "#EEE"
-		r.context.fillRect(20, 20, 201, 201)
+		r.context.fillStyle = (c.getPlayer(c.name).team ? "#FFB2B2" : "#B2B2FF")
+		r.context.fillRect(20, 20, 101, 201)
+		r.context.fillStyle = (c.getPlayer(c.name).team ? "#B2B2FF" : "#FFB2B2")
+		r.context.fillRect(121, 20, 100, 201)
+
 		for (i in c.players) {
 			if (c.players[i].name == c.name) {
 				r.context.fillStyle = "#4BF"
@@ -136,6 +139,12 @@ var Render = {
 	},
 	background: function() {
 		get("body").style.backgroundPosition  = c.x + " " + c.y
+		var alpha = 0.3
+		r.context.fillStyle = "rgba(" + (c.getPlayer(c.name).team ? "255, 0, 0" : "0, 0, 255") + ", " + alpha + ")"
+		r.context.fillRect(0, 0, window.innerWidth / 2 + c.x, window.innerHeight)
+		r.context.fillStyle = "rgba(" + (c.getPlayer(c.name).team ? "0, 0, 255" : "255, 0, 0") + ", " + alpha + ")"
+		r.context.fillRect(window.innerWidth / 2 + c.x, 0, window.innerWidth, window.innerHeight)
+
 	},
 	getOffsetX: function() {
 		return Math.round(window.innerWidth / 2) + c.x
