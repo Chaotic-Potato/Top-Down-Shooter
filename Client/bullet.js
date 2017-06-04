@@ -1,4 +1,4 @@
-var Bullet = function(name, a, gun) {
+var Bullet = function(name, a, gun, dist) {
 	var sounds = ["pistol", "smg", "rifle"]
 	this.x = 0
 	this.y = 0
@@ -11,6 +11,7 @@ var Bullet = function(name, a, gun) {
 	this.velX = Math.cos(a) * 300
 	this.velY = Math.sin(a) * 300
 	this.age = 0
+	this.dist = dist
 	this.audio.play()
 }
 
