@@ -7,6 +7,7 @@ var Render = {
 		r.clear()
 		r.background()
 		r.border()
+		r.clipBoxes()
 		r.bullets()
 		r.players()
 		r.names()
@@ -63,17 +64,14 @@ var Render = {
 		r.context.lineTo(19, 222)
 		r.context.lineTo(19, 19)
 		r.context.stroke()
-		r.context.fillStyle = (c.getPlayer(c.name).team ? "#FFB2B2" : "#B2B2FF")
-		r.context.fillRect(20, 20, 101, 201)
-		r.context.fillStyle = (c.getPlayer(c.name).team ? "#B2B2FF" : "#FFB2B2")
-		r.context.fillRect(121, 20, 100, 201)
-
+		r.context.fillStyle = "rgba(221, 221, 221, 0.9)"
+		r.context.fillRect(20, 20, 201, 201)
 		for (i in c.players) {
 			if (c.players[i].name == c.name) {
-				r.context.fillStyle = "#4BF"
+				r.context.fillStyle = "#3C3"
 			}
 			else {
-				r.context.fillStyle = "#000"
+				r.context.fillStyle = (c.players[i].team == c.getPlayer(c.name).team ? "#33C" : "#C33")
 			}
 			r.context.fillRect(119 - Math.round(c.players[i].x / c.mapDim * 100), 119 - Math.round(c.players[i].y / c.mapDim * 100), 3, 3)
 		}
@@ -111,6 +109,12 @@ var Render = {
 		r.context.lineTo(r.getOffsetX() - c.mapDim, r.getOffsetY() + c.mapDim)
 		r.context.lineTo(r.getOffsetX() - c.mapDim, r.getOffsetY() - c.mapDim)
 		r.context.stroke()
+	},
+	clipBoxes: function() {
+		for (i in c.clipBoxes) {
+			r.context.fillStyle = "rgba(0, 0, 0, 1)"
+			r.context.fillRect(c.x + window.innerWidth / 2 - c.clipBoxes[i].cx, c.y + window.innerHeight / 2 - c.clipBoxes[i].cy, c.clipBoxes[i].cx - c.clipBoxes[i].rx, c.clipBoxes[i].cy - c.clipBoxes[i].ry)
+		}
 	},
 	health: function() {
 		r.context.font = "24px Courier New"

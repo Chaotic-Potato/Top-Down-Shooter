@@ -5,6 +5,7 @@ var Server = {
 	lastSecond: new Date().getTime(),
 	ticks: 0,
 	points: 0,
+	clipBoxes: [{rx: 150, ry: 150, cx: 300, cy: 300}],
 	init: function() {
 		s.loop = setInterval(s.tick, (1000 / s.tickRate) - 0.1)
 		s.WebSocketServer = require('websocket').server
@@ -48,7 +49,7 @@ var Server = {
 							con.name = data
 							s.send("connect", [con.name, con.team])
 							s.send("gun", [con.name, con.gun])
-							con.sendUTF(JSON.stringify({type : "map", data : s.mapDim}))
+							con.sendUTF(JSON.stringify({type : "map", data : [s.mapDim, s.clipBoxes]}))
 							con.sendUTF(JSON.stringify({type : "points", data : s.points}))
 							for (i in s.clients) {
 								if (s.clients[i] != con) {
@@ -101,20 +102,24 @@ var Server = {
 						}
 					},
 					shot: function(data, con) {
-						console.log("Angle: " + data)
 						if (con.cooldown + con.reload == 0) {
 							if (con.ammo > 0 && con.health > 0) {
 								s.changeAmmo(con, con.ammo - 1)
 								data = (data + Math.pow(Math.random(), 2) * v.inacc[con.gun] * (Math.random() > 0.5 ? -1 : 1)) + Math.PI * 2 % (Math.PI * 2)
-								s.send("bullet", [con.name, data, con.gun])
-								con.cooldown = v.cooldown[con.gun]
+																con.cooldown = v.cooldown[con.gun]
 								var boxesHit = []
 								for (z in s.clients) {
-									for (var n = 0; n < 4; n++) {
+									for (var n = 0; n < v.hitBoxes.length; n++) {
 										var hit = s.hitBoxReg(s.clients[z].x - 8, s.clients[z].y + v.hitBoxes[n][0], s.clients[z].x + 8, s.clients[z].y + v.hitBoxes[n][1], con.x, con.y, data) 
 										if (hit != null && con != s.clients[z] && s.clients[z].health > 0 && s.clients[z].team != con.team) {
 											boxesHit.push([z, n, hit])
 										}
+									}
+								}
+								for (z in s.clipBoxes) {
+									var hit = s.hitBoxReg(s.clipBoxes[z].rx, s.clipBoxes[z].ry, s.clipBoxes[z].cx, s.clipBoxes[z].cy, con.x, con.y, data)
+									if (hit != null) {
+										boxesHit.push([z, null, hit])
 									}
 								}
 								if (boxesHit.length > 0) {
@@ -126,8 +131,11 @@ var Server = {
 											index = z
 										}
 									}
-									s.changeHealth(s.clients[boxesHit[index][0]], v.dmg[con.gun] * v.hitBoxes[boxesHit[index][1]][2], con)
+									if (boxesHit[index][1] != null) {
+										s.changeHealth(s.clients[boxesHit[index][0]], v.dmg[con.gun] * v.hitBoxes[boxesHit[index][1]][2], con)
+									}
 								}
+								s.send("bullet", [con.name, data, con.gun])
 							}
 							if (con.ammo == 0) {
 								s.reload(con)
@@ -154,7 +162,9 @@ var Server = {
 	tick: function() {
 		if (new Date().getTime() - s.lastSecond >= 1000) { 
 			s.lastSecond += 1000
-			console.log("Tick Rate: " + s.ticks) 
+			if (s.ticks < 100) {
+				console.log("WARNING: " + s.ticks + " TPS") 
+			}
 			s.ticks = 0
 		}
 		s.ticks++
@@ -248,7 +258,7 @@ var Server = {
 		return (trueTeam == falseTeam ? Math.random() < 0.5 : trueTeam < falseTeam)
 	},
 	hitBoxReg: function(rx, ry, cx, cy, px, py, a) {
-		if (rx <= px && py <= cx && ry <= py && py <= cx) {
+		if (rx <= px && px <= cx && ry <= py && py <= cx) {
 			return 0
 		}
 		if ((((px - rx) * Math.cos(a)) >= 0 || ((px - cx) * Math.cos(a)) >= 0) && (((py - ry) * Math.sin(a)) >= 0 || ((py - cy) * Math.sin(a)) >= 0)) {

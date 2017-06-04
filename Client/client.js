@@ -10,6 +10,7 @@ var Client = {
 	lastUpdate: new Date().getTime(),
 	audio: document.createElement("audio"),
 	points: 0,
+	clipBoxes: [],
 	keys: {
 		w : false,
 		s : false,
@@ -46,7 +47,6 @@ var Client = {
 						c.getPlayer(data[0]).dy = data[2]
 						c.getPlayer(data[0]).dir = data[3]
 					},
-
 					connect: function(data) {
 						c.players.push({name: data[0], team: data[1], x: 0, y: 0, dx: 0, dy: 0, dir: "Down"})
 					},
@@ -58,7 +58,8 @@ var Client = {
 						}
 					},
 					map: function(data) {
-						c.mapDim = data
+						c.mapDim = data[0]
+						c.clipBoxes = data[1]
 					},
 					health: function(data) {
 						c.health = data
