@@ -135,7 +135,7 @@ var Server = {
 										s.changeHealth(s.clients[boxesHit[index][0]], v.dmg[con.gun] * v.hitBoxes[boxesHit[index][1]][2], con)
 									}
 								}
-								s.send("bullet", [con.name, data, con.gun])
+								s.send("bullet", [con.name, data, con.gun, (boxesHit.length > 0 ? boxesHit[index][2] : 65536)])
 							}
 							if (con.ammo == 0) {
 								s.reload(con)

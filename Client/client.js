@@ -72,7 +72,7 @@ var Client = {
 						c.getPlayer(data[0]).gun = data[1]
 					},
 					bullet: function(data) {
-						c.bullets.push(new Bullet(data[0], data[1], data[2]))
+						c.bullets.push(new Bullet(data[0], data[1], data[2], data[3]))
 					},
 					kills: function(data) {
 						c.getPlayer(data[0]).kills = data[1]
@@ -107,7 +107,6 @@ var Client = {
 		}
 	},
 	tick: function() {
-		c.bulletTick()
 		c.updatePlayerPos()
 	},
 	getPlayer: function(name) {
@@ -127,16 +126,6 @@ var Client = {
 			c.players[i].y = Math.max(Math.min(c.players[i].y, c.mapDim), c.mapDim * -1)
 		}
 		c.lastUpdate = new Date().getTime()
-	},
-	bulletTick: function() {
-		for (i in c.bullets) {
-			c.bullets[i].tick()
-		}
-		for (var i = c.bullets.length - 1; i > -1; i--) {
-			if (c.bullets[i].age > 1000) {
-				c.bullets.splice(i, 1)
-			}
-		}
 	},
 	keyDown: function(evt) {
 		var key = String.fromCharCode(evt.keyCode).toLowerCase()
