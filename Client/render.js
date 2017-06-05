@@ -131,14 +131,24 @@ var Render = {
 	},
 	bullets: function () {
 		for (i in c.bullets) {
-			r.context.strokeStyle = "rgba(127, 127, 127, 1)"
-			r.context.beginPath()
-			r.context.lineWidth = 5
-			r.context.moveTo(r.getOffsetX() - c.bullets[i].x, r.getOffsetY() - c.bullets[i].y)
-			r.context.lineTo(r.getOffsetX() - c.bullets[i].x + (c.bullets[i].velX * (c.bullets[i].age < 3 ? c.bullets[i].age : 3)), r.getOffsetY() - c.bullets[i].y + (c.bullets[i].velY * (c.bullets[i].age < 3 ? c.bullets[i].age : 3)), 50)
-			r.context.stroke()
-			r.context.lineWidth = 1
-			r.context.strokeStyle = "rgba(0, 0, 0, 1)"
+			c.bullets[i].tick()
+		 	if (c.bullets[i].render) {
+				r.context.strokeStyle = "rgba(127, 127, 127, 1)"
+				r.context.beginPath()
+				r.context.lineWidth = 5
+				let x = c.bullets[i].x - c.x + window.innerWidth / 2
+				let y = c.bullets[i].y - c.y + window.innerHeight / 2
+				r.context.moveTo(x + c.bullets[i].velX * Math.max(0, c.bullets[i].dist - 3 * c.bullets[i].speed), y + c.bullets[i].velY * Math.max(0, c.bullets[i].dist - 3 * c.bullets[i].speed))
+				r.context.lineTo(x + c.bullets[i].velX * Math.min(c.bullets[i].dist, c.bullets[i].end), y + c.bullets[i].velY * Math.min(c.bullets[i].dist, c.bullets[i].end))
+				r.context.stroke()
+				r.context.lineWidth = 1
+				r.context.strokeStyle = "rgba(0, 0, 0, 1)"
+			}
+		}
+		for (var i = c.bullets.length - 1; i > -1; i--) {
+			if (!c.bullets[i].render && c.bullets[i].audio.currentTime == c.bullets[i].audio.duration) {
+				c.bullets.splice(i, 1)
+			}
 		}
 	},
 	background: function() {
