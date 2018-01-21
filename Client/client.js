@@ -7,6 +7,7 @@ var Client = {
 	health: 100,
 	mapDim: 800,
 	ammo: 13,
+	mouse: false,
 	lastUpdate: new Date().getTime(),
 	audio: document.createElement("audio"),
 	points: 0,
@@ -108,6 +109,9 @@ var Client = {
 	},
 	tick: function() {
 		c.updatePlayerPos()
+		if (c.mouse) {
+			c.shoot()
+		}
 	},
 	getPlayer: function(name) {
 		for (z in c.players) {
@@ -158,14 +162,23 @@ var Client = {
 		c.send("respawn", "")
 		c.bullets = []
 	},
-	click: function(evt, down) {
-		if (down) {
-			c.send("shot", (Math.atan(((window.innerWidth /2) - (evt.offsetX + 16)) / ((evt.offsetY + 16) - (window.innerHeight /2))) + (5 * Math.PI / 2) + ((evt.offsetY + 16) < (window.innerHeight / 2) ? 0 : Math.PI)) % (Math.PI * 2))
-		}
-
+	mouseDown: function() {
+		c.mouse = true
+	},
+	mouseUp: function() {
+		c.mouse = false
+	},
+	mouseMove: function (evt) {
+		c.mousePos = {x: evt.offsetX, y: evt.offsetY}
+	},
+	shoot: function() {
+		c.send("shot", (Math.atan(((window.innerWidth /2) - (c.mousePos.x + 16)) / ((c.mousePos.y + 16) - (window.innerHeight /2))) + (5 * Math.PI / 2) + ((c.mousePos.y + 16) < (window.innerHeight / 2) ? 0 : Math.PI)) % (Math.PI * 2))
 	}
 }
 
 var c = Client
 document.onkeyup = c.keyUp
 document.onkeydown = c.keyDown
+document.onmousedown = c.mouseDown
+document.onmouseup = c.mouseUp
+document.onmousemove = c.mouseMove

@@ -98,7 +98,7 @@ var Render = {
 			r.context.fillStyle = "rgba(187, 187, 187, 0.5)"
 			r.context.fillRect(r.getOffsetX() - c.players[i].x - width / 2 - 2, r.getOffsetY() - c.players[i].y - 56, width + 4, 20)
 			r.context.fillStyle = "rgba(0, 0, 0, 0.5)"
-			r.context.strokeText(c.players[i].name,r.getOffsetX() - c.players[i].x, r.getOffsetY() - c.players[i].y - 40)
+			r.context.fillText(c.players[i].name,r.getOffsetX() - c.players[i].x, r.getOffsetY() - c.players[i].y - 40)
 		}
 	},
 	border: function() {
@@ -120,14 +120,14 @@ var Render = {
 		r.context.font = "24px Courier New"
 		r.context.textAlign = "left"
 		r.context.fillStyle = "#000"
-		r.context.strokeText(c.health + "/100", 10, window.innerHeight - 10)
+		r.context.fillText(c.health + "/100", 10, window.innerHeight - 10)
 	},
 	ammo: function() {
 		var ammo = [13, 75, 40]
 		r.context.font = "24px Courier New"
 		r.context.textAlign = "right"
 		r.context.fillStyle = "#000"
-		r.context.strokeText(c.ammo + "/" + ammo[c.getPlayer(c.name).gun], window.innerWidth - 10, window.innerHeight - 10)
+		r.context.fillText(c.ammo + "/" + ammo[c.getPlayer(c.name).gun], window.innerWidth - 10, window.innerHeight - 10)
 	},
 	bullets: function () {
 		for (i in c.bullets) {
@@ -189,14 +189,14 @@ var Render = {
 		width += 130
 		r.context.fillStyle = "rgba(187, 187, 187, 0.5)"
 		r.context.fillRect(window.innerWidth / 2 - (width /2), 150, width, (c.players.length + 1) * 25)
-		r.context.strokeText("NAME", window.innerWidth / 2 - (width /2), 170)
-		r.context.strokeText("KLL", window.innerWidth / 2 + (width /2) - 110, 170)
-		r.context.strokeText("DTH", window.innerWidth / 2 + (width /2) - 50, 170)
+		r.context.fillText("NAME", window.innerWidth / 2 - (width /2), 170)
+		r.context.fillText("KLL", window.innerWidth / 2 + (width /2) - 110, 170)
+		r.context.fillText("DTH", window.innerWidth / 2 + (width /2) - 50, 170)
 		for (i in c.players) {
 			r.context.fillStyle = "rgba(0, 0, 0, 0.5)"
-			r.context.strokeText(c.players[i].name, window.innerWidth / 2 - (width /2), 195 + (25 * i))
-			r.context.strokeText(c.players[i].kills, window.innerWidth / 2 + (width /2) - 110, 195 + (25 * i))
-			r.context.strokeText(c.players[i].deaths, window.innerWidth / 2 + (width /2) - 50, 195 + (25 * i))
+			r.context.fillText(c.players[i].name, window.innerWidth / 2 - (width /2), 195 + (25 * i))
+			r.context.fillText(c.players[i].kills, window.innerWidth / 2 + (width /2) - 110, 195 + (25 * i))
+			r.context.fillText(c.players[i].deaths, window.innerWidth / 2 + (width /2) - 50, 195 + (25 * i))
 		}
 	},
 	msgs: function() {
@@ -212,7 +212,7 @@ var Render = {
 			r.context.fillStyle = "rgba(187, 187, 187, 0.5)"
 			r.context.fillRect(window.innerWidth - width - 15, 20 + i * 25, width, 20)
 			r.context.textAlign = "right"
-			r.context.strokeText(c.killMsgs[i][1] + "   " + c.killMsgs[i][0], window.innerWidth - 20 , 38 + (i * 25))
+			r.context.fillText(c.killMsgs[i][1] + "   " + c.killMsgs[i][0], window.innerWidth - 20 , 38 + (i * 25))
 			r.drawImage(gun[c.killMsgs[i][2]], (window.innerWidth - r.context.measureText(c.killMsgs[i][0]).width - 55), 15 + (i * 25), 32, 32)
 			
 		}
@@ -220,7 +220,7 @@ var Render = {
 	points: function() {
 		r.context.strokeStyle = (c.points >= 0 ? "#00F" : "#F00")
 		r.context.textAlign = "left"
-		r.context.strokeText(Math.abs(c.points) + " / 100", 20, 250)
+		r.context.fillText(Math.abs(c.points) + " / 100", 20, 250)
 		r.context.strokeStyle = "#000"
 		r.context.beginPath()
 		r.context.moveTo(19, 259)
