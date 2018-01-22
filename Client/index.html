@@ -19,7 +19,7 @@
 			<img id="rifle" src="Images/rifle.png">
 			<img id="smg" src="Images/smg.png">
 			<img id="pistol" src="Images/pistol.png">
-			<img id="bullet" src="Images/bullet.png">
+			<img id="crate" src="Images/crate.png">
 		</div>
 		<div id="connect" style="position:absolute;">
 			<span>Name:</span>
@@ -27,7 +27,7 @@
 			<button onclick="c.connect('potatobox.no-ip.info')">Connect</button>
 			<button onclick="c.connect('127.0.0.1')">Connect Local</button>
 		</div>
-		<canvas id="canvas" style="visibility:hidden;position:absolute" onmousedown="c.click(event, true)" onmouseup="c.click(event, false)"></canvas>
+		<canvas id="canvas" style="visibility:hidden;position:absolute"></canvas>
 		<canvas id="map" style="visibility:hidden;position:absolute"></canvas>
 		<script src="script.js"></script>
 		<script src="client.js"></script>

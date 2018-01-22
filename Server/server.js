@@ -2,7 +2,7 @@ var Server = {
 	clients: [],
 	tickRate: 100,
 	mapDim: 800,
-	lastSecond: new Date().getTime(),
+	lastSecond: new Date().getTime() + 1000,
 	ticks: 0,
 	points: 0,
 	clipBoxes: [{rx: 150, ry: 150, cx: 300, cy: 300}],
@@ -145,7 +145,7 @@ var Server = {
 				}
 				if (typeFunc[m.type] != undefined) {
 					typeFunc[m.type](m.data, con)
-					console.log('GOT: {client:"' + con.name + '", ' +  'data:"' + m.data + '"}')
+					console.log("[" + new Date().toString().split(" GMT")[0] + '] GOT: {client:"' + con.name + '", ' +  'data:"' + m.data + '"}')
 				}
 			})
 			con.on('close', function(r, desc) {
@@ -163,7 +163,7 @@ var Server = {
 		if (new Date().getTime() - s.lastSecond >= 1000) { 
 			s.lastSecond += 1000
 			if (s.ticks < 100) {
-				console.log("WARNING: " + s.ticks + " TPS") 
+				console.log("[" + new Date().toString().split(" GMT")[0] + "] WARNING: " + s.ticks + " UPS") 
 			}
 			s.ticks = 0
 		}
@@ -172,11 +172,13 @@ var Server = {
 			if (s.clients[i].health > 0) {
 				var dx = s.addX((s.clients[i].keyPress.a ? 3 : 0) - (s.clients[i].keyPress.d ? 3 : 0), s.clients[i])
 				var dy = s.addY((s.clients[i].keyPress.w ? 3 : 0) - (s.clients[i].keyPress.s ? 3 : 0), s.clients[i])
+				s.fixCollide(s.clients[i])
 				if (dx != s.clients[i].dx || dy != s.clients[i].dy) {
 					s.updateVel(s.clients[i], dx, dy)
 				}
 				s.clients[i].dx = dx
 				s.clients[i].dy = dy
+				
 			}
 			s.clients[i].cooldown -= (s.clients[i].cooldown > 0 ? 1 : 0)
 			if (s.clients[i].reload > 0) {
@@ -200,6 +202,43 @@ var Server = {
 			c.y = s.mapDim * (c.y > 0 ? 1 : -1)
 		}
 		return a
+	},
+	fixCollide: function(c) {
+		box = s.getCollide(c)
+		if (!box) {
+			return
+		}
+		mx = (box.rx + box.cx) / 2
+		my = (box.ry + box.cy) / 2
+		dmx = c.x - mx
+		dmy = c.y - my
+		if (Math.abs(dmx) > Math.abs(dmy)) {
+			if (dmx > 0) {
+			c.dx
+				c.x = box.cx
+			}
+			else {
+				c.x = box.rx
+			}
+		}
+		else {
+			if (dmy > 0) {
+				c.y = box.cy
+			}
+			else {
+				c.y = box.ry
+			}
+		}
+		s.updateCoords(c, c.x, c.y)
+	},
+	getCollide: function(c) {
+		for (i in s.clipBoxes) {
+			box = s.clipBoxes[i]
+			if (box.rx < c.x &&  box.cx > c.x && box.ry < c.y && box.cy > c.y) {
+				return box
+			}
+		}
+		return null
 	},
 	changeHealth: function(c, val, shooter) {
 		if (c.health + val > 0) {
@@ -236,7 +275,7 @@ var Server = {
 		for (x in s.clients){
 			s.clients[x].sendUTF(JSON.stringify({type : t, data : m}))
 		}
-		console.log('SEND: {type:"' + t + '", ' +  'data:"' + m + '"}')
+		console.log("[" + new Date().toString().split(" GMT")[0] + '] SEND: {type:"' + t + '", ' +  'data:"' + m + '"}')
 	},
 	nameValid: function(name) {
 		for (i in s.clients) {
@@ -258,7 +297,7 @@ var Server = {
 		return (trueTeam == falseTeam ? Math.random() < 0.5 : trueTeam < falseTeam)
 	},
 	hitBoxReg: function(rx, ry, cx, cy, px, py, a) {
-		if (rx <= px && px <= cx && ry <= py && py <= cx) {
+		if (rx < px && px < cx && ry < py && py < cx) {
 			return 0
 		}
 		if ((((px - rx) * Math.cos(a)) >= 0 || ((px - cx) * Math.cos(a)) >= 0) && (((py - ry) * Math.sin(a)) >= 0 || ((py - cy) * Math.sin(a)) >= 0)) {

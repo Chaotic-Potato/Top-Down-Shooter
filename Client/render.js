@@ -5,9 +5,9 @@ var Render = {
 	mapContext: document.getElementById("map").getContext("2d"),
 	tick: function() {
 		r.clear()
+		r.clipBoxes()
 		r.background()
 		r.border()
-		r.clipBoxes()
 		r.bullets()
 		r.players()
 		r.names()
@@ -113,7 +113,8 @@ var Render = {
 	clipBoxes: function() {
 		for (i in c.clipBoxes) {
 			r.context.fillStyle = "rgba(0, 0, 0, 1)"
-			r.context.fillRect(c.x + window.innerWidth / 2 - c.clipBoxes[i].cx, c.y + window.innerHeight / 2 - c.clipBoxes[i].cy, c.clipBoxes[i].cx - c.clipBoxes[i].rx, c.clipBoxes[i].cy - c.clipBoxes[i].ry)
+			box = c.clipBoxes[i]
+			r.drawImage("crate", c.x + window.innerWidth / 2 - box.cx, c.y + window.innerHeight / 2 - box.cy, box.cx - box.rx, box.cy - box.ry)
 		}
 	},
 	health: function() {
@@ -220,7 +221,7 @@ var Render = {
 	points: function() {
 		r.context.strokeStyle = (c.points >= 0 ? "#00F" : "#F00")
 		r.context.textAlign = "left"
-		r.context.fillText(Math.abs(c.points) + " / 100", 20, 250)
+		r.context.fillText(Math.abs(c.points) + " / " + c.players.length * 50, 20, 250)
 		r.context.strokeStyle = "#000"
 		r.context.beginPath()
 		r.context.moveTo(19, 259)

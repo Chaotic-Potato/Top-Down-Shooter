@@ -27,6 +27,11 @@ var Client = {
 		r.tick()
 		if (c.sock == undefined){
 			c.sock = new WebSocket("ws://" + host + ":8989", 'echo-protocol')
+			document.onkeyup = c.keyUp
+			document.onkeydown = c.keyDown
+			document.onmousedown = c.mouseDown
+			document.onmouseup = c.mouseUp
+			document.onmousemove = c.mouseMove
 			c.name = get("name").value
 			get("connect").style.visibility = "hidden"
 			get("canvas").style.visibility = "visible"
@@ -40,8 +45,6 @@ var Client = {
 					moveUpdate: function(data) {
 						c.getPlayer(data[0]).x = data[1]
 						c.getPlayer(data[0]).y = data[2]
-						c.getPlayer(data[0]).dx = 0
-						c.getPlayer(data[0]).dy = 0
 					},
 					move: function(data) {
 						c.getPlayer(data[0]).dx = data[1]
@@ -104,6 +107,7 @@ var Client = {
 			}
 			c.sock.onclose = function() { 
 				alert("Disconnected from Server")
+				location.reload()
 			}
 		}
 	},
@@ -177,8 +181,3 @@ var Client = {
 }
 
 var c = Client
-document.onkeyup = c.keyUp
-document.onkeydown = c.keyDown
-document.onmousedown = c.mouseDown
-document.onmouseup = c.mouseUp
-document.onmousemove = c.mouseMove
