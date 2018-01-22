@@ -47,8 +47,9 @@ var Server = {
 					init: function(data, con) {
 						if (s.nameValid(data)) {
 							con.team = !s.getMajorityTeam()
+							s.spawn(con)
 							con.name = data
-							s.send("connect", [con.name, con.team])
+							s.send("connect", [con.name, con.team, con.x, con.y])
 							s.send("gun", [con.name, con.gun])
 							con.sendUTF(JSON.stringify({type : "map", data : [s.mapDim, s.clipBoxes]}))
 							con.sendUTF(JSON.stringify({type : "points", data : s.points}))
@@ -93,13 +94,7 @@ var Server = {
 							for (i in con.keyPress) {
 								con.keyPress[i] = false
 							}
-							con.x = Math.round((Math.random() * (s.mapDim * 2)) - s.mapDim)
-							con.y = Math.round((Math.random() * (s.mapDim * 2)) - s.mapDim)
-							con.dx = 0
-							con.dy = 0
-							con.dir = "Down"
-							s.send("moveUpdate",[con.name, con.x, con.y])
-							s.send("move", [con.name, con.dx, con.dy, "Down"])
+							s.spawn(con)
 						}
 					},
 					shot: function(data, con) {
@@ -162,7 +157,7 @@ var Server = {
 	},
 	genMap: function() {
 		const WIDTH = Math.floor(s.mapDim / 64)
-		const CORN = Math.ceil(-s.mapDim / 64) * 64
+		const CORN = Math.ceil(-s.mapDim / 64) * 64 - 32
 		var map = [[]]
 		for (var i = 0; i < WIDTH; i++) {
 			map[i] = []
@@ -218,6 +213,15 @@ var Server = {
 				}
 			}
 		}
+	},
+	spawn: function(c) {
+		c.x = Math.round(((Math.random() + 1) / 2) * s.mapDim * (c.team ? -1 : 1))
+		c.y = Math.round((Math.random() * (s.mapDim * 2)) - s.mapDim)
+		c.dx = 0
+		c.dy = 0
+		c.dir = "Down"
+		s.send("moveUpdate",[c.name, c.x, c.y])
+		s.send("move", [c.name, c.dx, c.dy, "Down"])
 	},
 	addX: function(a, c) {
 		c.x += a
@@ -285,11 +289,21 @@ var Server = {
 				s.send("kills", [shooter.name, shooter.kills])
 				s.points += v.points[shooter.gun] * (shooter.team ? 1 : -1)
 				s.send("points", s.points)
+				s.checkWin()
 			}
 			s.send("moveUpdate", [c.name, c.x, c.y])
 			s.send("move", [c.name, 0, 0, c.dir])
 		}
 		c.sendUTF(JSON.stringify({type : "health", data : c.health}))
+	},
+	checkWin: function() {
+		if (Math.abs(s.points) >= s.clients.length * 2) {
+			s.send("win", s.points > 0)
+			s.points = 0
+			for (var i = s.clients.length - 1; i >= 0; i--) {
+				s.clients[i].close()
+			}
+		}
 	},
 	changeAmmo: function(c, a) {
 		c.ammo = a
@@ -355,7 +369,7 @@ var Server = {
 			c.reload = v.reload[c.gun]
 			c.sendUTF(JSON.stringify({type : "reload"}))
 		}
-	},
+	}
 }
 
 var Values = {

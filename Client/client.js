@@ -52,7 +52,8 @@ var Client = {
 						c.getPlayer(data[0]).dir = data[3]
 					},
 					connect: function(data) {
-						c.players.push({name: data[0], team: data[1], x: 0, y: 0, dx: 0, dy: 0, dir: "Down"})
+						c.players.push({name: data[0], team: data[1], x: data[2], y: data[3], dx: 0, dy: 0, dir: "Down"})
+						c.team = data[1]
 					},
 					disconnect: function(data) {
 						for (i in c.players) {
@@ -60,6 +61,9 @@ var Client = {
 								c.players.splice(i, 1)
 							}
 						}
+					},
+					win: function(data) {
+						alert("Your team " + (data == c.team ? "won!" : "lost!"))
 					},
 					map: function(data) {
 						c.mapDim = data[0]
@@ -106,8 +110,10 @@ var Client = {
 				c.send("init", c.name)
 			}
 			c.sock.onclose = function() { 
-				alert("Disconnected from Server")
-				location.reload()
+				setTimeout(function() {
+					alert("Disconnected from Server")
+					location.reload()
+				}, 2000)
 			}
 		}
 	},

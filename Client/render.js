@@ -225,15 +225,15 @@ var Render = {
 		r.context.strokeStyle = "#000"
 		r.context.beginPath()
 		r.context.moveTo(19, 259)
-		r.context.lineTo(121, 259)
-		r.context.lineTo(121, 286)
+		r.context.lineTo(221, 259)
+		r.context.lineTo(221, 286)
 		r.context.lineTo(19, 286)
 		r.context.lineTo(19, 259)
 		r.context.stroke()
 		r.context.fillStyle = "#aaa"
-		r.context.fillRect(20, 260, 100, 25)
+		r.context.fillRect(20, 260, 200, 25)
 		r.context.fillStyle = (c.points >= 0 ? "#00F" : "#F00")
-		r.context.fillRect(20, 260,Math.min(100, Math.abs(c.points)), 25)
+		r.context.fillRect(20, 260, Math.min(100, 200 * Math.abs(c.points / (c.players.length * 50))), 25)
 	},
 	clear: function() {
 		r.context.clearRect(0, 0, r.canvas.width, r.canvas.height)
