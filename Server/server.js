@@ -1,12 +1,13 @@
 var Server = {
 	clients: [],
 	tickRate: 100,
-	mapDim: 800,
+	mapDim: 3200,
 	lastSecond: new Date().getTime() + 1000,
 	ticks: 0,
 	points: 0,
-	clipBoxes: [{rx: 150, ry: 150, cx: 300, cy: 300}],
+	clipBoxes: [],
 	init: function() {
+		s.genMap()
 		s.loop = setInterval(s.tick, (1000 / s.tickRate) - 0.1)
 		s.WebSocketServer = require('websocket').server
 		s.http =  require("http") 
@@ -159,6 +160,35 @@ var Server = {
 			})
 		})
 	},
+	genMap: function() {
+		const WIDTH = Math.floor(s.mapDim / 64)
+		const CORN = Math.ceil(-s.mapDim / 64) * 64
+		var map = [[]]
+		for (var i = 0; i < WIDTH; i++) {
+			map[i] = []
+			for (var j = 0; j < WIDTH; j++) {
+				map[i][j] = false
+			}
+		}
+		for (var i = 0; i < WIDTH; i += 2) {
+			for (var j = 0; j < 2; j++) {
+				var b = Math.floor(Math.random() * (WIDTH - 1))
+				var e = 1 + b + Math.floor(Math.random() * (WIDTH - b - 1))
+				for (var k = b; k <= e; k++) {
+					map[(j ? i : k)][(j ? k : i)] = Math.random() < 0.7
+				}
+			}
+		}
+		for (i in map) {
+			for (j in map[i]) {
+				if (map[i][j]) {
+					var x = CORN + (i * 128)
+					var y = CORN + (j * 128)
+					s.clipBoxes.push({rx: x, ry: y, cx: x + 128, cy: y + 128})
+				}
+			}
+		}
+	},
 	tick: function() {
 		if (new Date().getTime() - s.lastSecond >= 1000) { 
 			s.lastSecond += 1000
@@ -215,26 +245,26 @@ var Server = {
 		if (Math.abs(dmx) > Math.abs(dmy)) {
 			if (dmx > 0) {
 			c.dx
-				c.x = box.cx
+				c.x = box.cx + 1
 			}
 			else {
-				c.x = box.rx
+				c.x = box.rx - 1
 			}
 		}
 		else {
 			if (dmy > 0) {
-				c.y = box.cy
+				c.y = box.cy + 1
 			}
 			else {
-				c.y = box.ry
+				c.y = box.ry - 1
 			}
 		}
 		s.updateCoords(c, c.x, c.y)
 	},
 	getCollide: function(c) {
-		for (i in s.clipBoxes) {
-			box = s.clipBoxes[i]
-			if (box.rx < c.x &&  box.cx > c.x && box.ry < c.y && box.cy > c.y) {
+		for (b in s.clipBoxes) {
+			box = s.clipBoxes[b]
+			if (box.rx <= c.x &&  box.cx >= c.x && box.ry <= c.y && box.cy >= c.y) {
 				return box
 			}
 		}

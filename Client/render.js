@@ -156,9 +156,9 @@ var Render = {
 		get("body").style.backgroundPosition  = c.x + " " + c.y
 		var alpha = 0.3
 		r.context.fillStyle = "rgba(" + (c.getPlayer(c.name).team ? "255, 0, 0" : "0, 0, 255") + ", " + alpha + ")"
-		r.context.fillRect(0, 0, window.innerWidth / 2 + c.x, window.innerHeight)
+		r.context.fillRect(0, 0, Math.min(window.innerWidth / 2 + c.x, window.innerWidth), window.innerHeight)
 		r.context.fillStyle = "rgba(" + (c.getPlayer(c.name).team ? "0, 0, 255" : "255, 0, 0") + ", " + alpha + ")"
-		r.context.fillRect(window.innerWidth / 2 + c.x, 0, window.innerWidth, window.innerHeight)
+		r.context.fillRect(Math.max(window.innerWidth / 2 + c.x, 0), 0, window.innerWidth, window.innerHeight)
 
 	},
 	getOffsetX: function() {
