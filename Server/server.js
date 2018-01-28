@@ -102,7 +102,7 @@ var Server = {
 							if (con.ammo > 0 && con.health > 0) {
 								s.changeAmmo(con, con.ammo - 1)
 								data = (data + Math.pow(Math.random(), 2) * v.inacc[con.gun] * (Math.random() > 0.5 ? -1 : 1)) + Math.PI * 2 % (Math.PI * 2)
-																con.cooldown = v.cooldown[con.gun]
+								con.cooldown = v.cooldown[con.gun]
 								var boxesHit = []
 								for (z in s.clients) {
 									for (var n = 0; n < v.hitBoxes.length; n++) {
@@ -122,7 +122,7 @@ var Server = {
 									var index = 0
 									var min = boxesHit[0][2]
 									for (var z = 1; z < boxesHit.length; z++) {
-										if (boxesHit[z][2] < min) {
+										if (boxesHit[z][2] != null && boxesHit[z][2] < min) {
 											min = boxesHit[z][2]
 											index = z
 										}
@@ -157,7 +157,7 @@ var Server = {
 	},
 	genMap: function() {
 		const WIDTH = Math.floor(s.mapDim / 64)
-		const CORN = Math.ceil(-s.mapDim / 64) * 64 - 32
+		const CORN = Math.ceil(-s.mapDim / 64) * 64
 		var map = [[]]
 		for (var i = 0; i < WIDTH; i++) {
 			map[i] = []
@@ -195,8 +195,8 @@ var Server = {
 		s.ticks++
 		for (i in s.clients) {
 			if (s.clients[i].health > 0) {
-				var dx = s.addX((s.clients[i].keyPress.a ? 3 : 0) - (s.clients[i].keyPress.d ? 3 : 0), s.clients[i])
-				var dy = s.addY((s.clients[i].keyPress.w ? 3 : 0) - (s.clients[i].keyPress.s ? 3 : 0), s.clients[i])
+				var dx = s.addX((s.clients[i].keyPress.a ? 300 : 0) - (s.clients[i].keyPress.d ? 300 : 0), s.clients[i])
+				var dy = s.addY((s.clients[i].keyPress.w ? 300 : 0) - (s.clients[i].keyPress.s ? 300 : 0), s.clients[i])
 				s.fixCollide(s.clients[i])
 				if (dx != s.clients[i].dx || dy != s.clients[i].dy) {
 					s.updateVel(s.clients[i], dx, dy)
@@ -224,14 +224,14 @@ var Server = {
 		s.send("move", [c.name, c.dx, c.dy, "Down"])
 	},
 	addX: function(a, c) {
-		c.x += a
+		c.x += a / s.tickRate
 		if (Math.abs(c.x) > s.mapDim) {
 			c.x = s.mapDim * (c.x > 0 ? 1 : -1)
 		}
 		return a
 	},
 	addY: function(a, c) {
-		c.y += a
+		c.y += a / s.tickRate
 		if (Math.abs(c.y) > s.mapDim) {
 			c.y = s.mapDim * (c.y > 0 ? 1 : -1)
 		}
@@ -268,7 +268,7 @@ var Server = {
 	getCollide: function(c) {
 		for (b in s.clipBoxes) {
 			box = s.clipBoxes[b]
-			if (box.rx <= c.x &&  box.cx >= c.x && box.ry <= c.y && box.cy >= c.y) {
+			if (box.rx < c.x &&  box.cx > c.x && box.ry < c.y && box.cy > c.y) {
 				return box
 			}
 		}
@@ -341,8 +341,8 @@ var Server = {
 		return (trueTeam == falseTeam ? Math.random() < 0.5 : trueTeam < falseTeam)
 	},
 	hitBoxReg: function(rx, ry, cx, cy, px, py, a) {
-		if (rx < px && px < cx && ry < py && py < cx) {
-			return 0
+		if (rx < px && px < cx && ry < py && py < cy) {
+			return -1
 		}
 		if ((((px - rx) * Math.cos(a)) >= 0 || ((px - cx) * Math.cos(a)) >= 0) && (((py - ry) * Math.sin(a)) >= 0 || ((py - cy) * Math.sin(a)) >= 0)) {
 			return null
@@ -381,11 +381,11 @@ var Values = {
 		d : "Right"
 	},
 	inacc: [0.09, 0.35, 0.18],
-	cooldown: [30,17,20],
+	cooldown: [30, 17, 20],
 	hitBoxes: [
 		[8, 20, 1.6],
 		[20, 20, 0.6],
-		[-14, 8, 1],
+		[-14, 8, 1.0],
 		[-32, -14, 0.6],
 	],
 	hitCenters: [14, 20, -3, -23],

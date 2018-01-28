@@ -139,7 +139,7 @@ var Render = {
 				r.context.lineWidth = 5
 				let x = c.bullets[i].x - c.x + window.innerWidth / 2
 				let y = c.bullets[i].y - c.y + window.innerHeight / 2
-				r.context.moveTo(x + c.bullets[i].velX * Math.max(0, c.bullets[i].dist - 3 * c.bullets[i].speed), y + c.bullets[i].velY * Math.max(0, c.bullets[i].dist - 3 * c.bullets[i].speed))
+				r.context.moveTo(x + c.bullets[i].velX * Math.max(0, c.bullets[i].dist - 10 * c.bullets[i].speed), y + c.bullets[i].velY * Math.max(0, c.bullets[i].dist - 10 * c.bullets[i].speed))
 				r.context.lineTo(x + c.bullets[i].velX * Math.min(c.bullets[i].dist, c.bullets[i].end), y + c.bullets[i].velY * Math.min(c.bullets[i].dist, c.bullets[i].end))
 				r.context.stroke()
 				r.context.lineWidth = 1
@@ -168,6 +168,9 @@ var Render = {
 		return Math.round(window.innerHeight / 2) + c.y 
 	},
 	drawImage: function(id, x, y, w, h) {
+		if (x > window.innerWidth || y > window.innerHeight || x + w < 0 || y + h < 0) {
+			return
+		}
 		if (get(id) != undefined && get(id).tagName == "IMG") {
 			r.context.drawImage(get(id), x, y, w, h)
 		}

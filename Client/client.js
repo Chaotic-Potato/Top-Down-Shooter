@@ -1,5 +1,5 @@
 var Client = {
-	tickRate: 100,
+	tickRate: 60,
 	dir: "Down",
 	players: [],
 	bullets: [],
@@ -134,8 +134,8 @@ var Client = {
 	updatePlayerPos: function() {
 		var diff = new Date().getTime() - c.lastUpdate
 		for (i in c.players) {
-			c.players[i].x += c.players[i].dx * diff * c.tickRate / 1000
-			c.players[i].y += c.players[i].dy * diff * c.tickRate / 1000
+			c.players[i].x += c.players[i].dx * diff / 1000
+			c.players[i].y += c.players[i].dy * diff / 1000
 			c.players[i].x = Math.max(Math.min(c.players[i].x, c.mapDim), c.mapDim * -1)
 			c.players[i].y = Math.max(Math.min(c.players[i].y, c.mapDim), c.mapDim * -1)
 		}
